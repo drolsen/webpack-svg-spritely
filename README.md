@@ -28,7 +28,7 @@ Thats it!
 ## Options
 
 Option | Types | Description | Default
---- | ---
+--- | --- | --- | ---
 `output` | String | Location of where sprite file gets output. | Webpack config output location.
 `filename` | String | Name of the sprite file. | iconset.svg
 `prefix` | String | Prefix used in the sprite file symbol's name | icon-
