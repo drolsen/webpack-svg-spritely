@@ -18,7 +18,7 @@ Instantiate a new WebpackSVGSpritely() class within webpack config's plugin arra
 ```js
 module.exports = {
   "plugins": [
-    new WebpackSVGSpritely();
+    new WebpackSVGSpritely()
   ]
 };
 ```
