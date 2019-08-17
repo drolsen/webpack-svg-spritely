@@ -1,0 +1,21 @@
+{
+	"name": "WebpackSVGSpritely",
+	"version": "0.0.1",
+	"description": "Webpack SVG Sprite bundle plugin",
+	"repository": "drolsen/webpack-svg-spritely",
+	"bugs": {
+		"url": "https://github.com/drolsen/webpack-svg-spritely/issues"
+	},
+	"author": "Devin R. Olsen",
+	"license": "MIT",
+	"scripts": {
+		"test": "webpack --config ./test/test.config.js --mode production"
+	},
+	"devDependencies": {
+		"clean-webpack-plugin": "^0.1.19",
+		"file-loader": "^4.2.0",
+		"image-webpack-loader": "^5.0.0",
+		"webpack": "^4.28.1",
+		"webpack-cli": "^3.2.1"
+	}
+}
