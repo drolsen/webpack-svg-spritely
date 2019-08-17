@@ -3,7 +3,7 @@
   <p>Plugin that takes project svg files and bundles them into a iconset svg sprite file.</p>
 </div>
 
-By default, webpack-svg-spritely will try to locate your build's entry file and inject needed XHR code to request the bundled svg sprite file at page load, however if you would like use opt of of this feature or better specify what entry file to include XHR code into, see options below.
+---
 
 ### Install
 ```
@@ -30,12 +30,25 @@ Make sure to include SVG files into one of your webpack config entry files:
 require.context('src/project/images/', false, /\.(svg)$/);
 ```
 
-If you have not already configured webpack to handle images for including project svg files, have a look see at the test configuration found [https://github.com/drolsen/webpack-svg-spritely/blob/master/test/test.config.js#L16-L27](here) to see how to use `file-loader` with webpack.
+If you have not already configured webpack to handle images for including project svg files, have a look see at the test configuration found [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/test.config.js#L16-L27) to see how to use `file-loader` with webpack.
 
 Thats it!
 
+---
+
+By default, webpack-svg-spritely will try to locate your build's entry file and inject needed XHR code to request the bundled svg sprite file at page load, however if you would like use opt of of this feature or better specify what entry file to include XHR code into, see options below.
 
 ## Options
+
+```js
+module.exports = {
+  "plugins": [
+    new WebpackSVGSpritely({
+    	...options...
+    })
+  ]
+};
+```
 
 Option | Types | Description | Default
 --- | --- | --- | ---
