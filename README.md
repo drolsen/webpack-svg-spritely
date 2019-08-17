@@ -15,13 +15,11 @@ const WebpackSVGSpritely = require('webpack-svg-spritely');
 ```
 
 Instantiate a new WebpackSVGSpritely() class within webpack config's plugin array:
-```json
+```js
 module.exports = {
-  ...
-  plugins: [
+  "plugins": [
     new WebpackSVGSpritely();
   ]
-  ...
 };
 ```
 Thats it!
