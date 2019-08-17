@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/assets/logo.png" /><br />
+  <img src="/assets/logo.png" width="300" /><br />
   <p>Plugin that bundles project svg files into a sprite file.</p>
 </div>
 
@@ -64,7 +64,7 @@ For any questions around webpack image configuration, please first review [repos
 module.exports = {
   "plugins": [
     new WebpackSVGSpritely({
-    	...options...
+      ...options...
     })
   ]
 };
@@ -84,7 +84,7 @@ With the output option you can specify a deeper location within the main webpack
 
 ```js
 new WebpackSVGSpritely({
-	output: '/custom/location/images'
+  output: '/custom/location/images'
 })
 ```
 
@@ -95,7 +95,7 @@ Please note if you use a hash pop within file names, you are subjected to unique
 
 ```js
 new WebpackSVGSpritely({
-	filename: 'custom-[hash].svg'
+  filename: 'custom-[hash].svg'
 })
 ```
 
@@ -104,7 +104,7 @@ If you have svg files named `up.svg` and `down.svg` being bundled into a svg spr
 
 ```js
 new WebpackSVGSpritely({
-	prefix: 'custom-prefix' // becomes <symbol name="custom-prefix-filename">
+  prefix: 'custom-prefix' // becomes <symbol name="custom-prefix-filename">
 })
 ```
 
@@ -117,7 +117,7 @@ Please note, if you turn this feature off and are trying to write your own XHR r
 
 ```js
 new WebpackSVGSpritely({
-	xhr: false (default true)
+  xhr: false (default true)
 })
 ```
 
@@ -126,7 +126,7 @@ If you choose to use the xhr option from above, the default request location wil
 
 ```js
 new WebpackSVGSpritely({
-	xhrPath: '/~/custom/production/path'
+  xhrPath: '/~/custom/production/path'
 })
 ```
 
@@ -139,10 +139,10 @@ module.exports = {
     testA: 'test.a.js',
     testB: 'test.b.js'
   },	
-  "plugins": [
-	new WebpackSVGSpritely({
-		xhrEntry: 'testA'
-	})
+    "plugins": [
+      new WebpackSVGSpritely({
+        xhrEntry: 'testA'
+      })
   ]
 };
 
