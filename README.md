@@ -1,5 +1,7 @@
-# webpack-svg-spritely
-A Webpack plugin that takes project svg files and bundles them into a iconset svg sprite file.
+<div align="center">
+  <img width="200" height="200" src="/assets/logo.png" />
+  <p>Plugin that takes project svg files and bundles them into a iconset svg sprite file.</p>
+</div>
 
 By default, webpack-svg-spritely will try to locate your build's entry file and inject needed XHR code to request the bundled svg sprite file at page load, however if you would like use opt of of this feature or better specify what entry file to include XHR code into, see options below.
 
