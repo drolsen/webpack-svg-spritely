@@ -4,7 +4,7 @@
 </div>
 
 ### How it works
-Webpack SVG Spritely taks all incomming SVG files of a given webpack entry file, and then builds svg symbols out of each found file. Once done creating symbols, Webpack SVG spritely writes a svg file of all symbols to disk.
+Webpack SVG Spritely takes all incoming SVG files of a given webpack entry file, and then builds svg symbols out of each found file. Once done creating symbols, Webpack SVG spritely writes a svg file of all symbols to disk.
 
 After saving to disk, Webpack SVG Spritely then adds supporting XHR code into your bundle to be ran in browser. Once bundle and supporting XHR is ran your newly created svg sprite file is loaded into the DOM from disk and document is ready for sprite usage.
 
@@ -35,7 +35,7 @@ module.exports = {
 Thats it!
 
 ### How to use sprite
-To reference SVG sprite parts we use the xmllinkHref / sprite symbol name witin our DOM ([filename] should be subsituted with filename of svg you wish to render):
+To reference SVG sprite parts we use the xmllinkHref / sprite symbol name within our DOM ([filename] should be substituted with filename of svg you wish to render):
 
 ```xml
 <svg>
@@ -79,7 +79,7 @@ Option | Types | Description | Default
 `xhrEntry` | String | Defines what entry file to inject XHR code into.
 
 ### output
-With the output option you can speicify a deeper location within the main webpack output configuration. This is useful for project organization.
+With the output option you can specify a deeper location within the main webpack output configuration. This is useful for project organization.
 
 ### filename
 This option allows you to specify the name of the sprite file that gets bundled. You can use a [hash] flag to combat cache.
@@ -87,7 +87,7 @@ This option allows you to specify the name of the sprite file that gets bundled.
 Please note if you use a hash pop within file names, you are subjected to unique hash numbers per build and will make targeting the file with custom XHR methods outside of webpack-svg-spritely's XHR code difficult if not impossible.
 
 ### prefix
-If you have svg files named `up.svg` and `down.svg` being bundled into a svg sprite, by default their sprited names are `icon-up` and `icon-down` respectively. This prefix option allows you to change the prefix taxed onto the sprited symbol names from `icon-` to something custom. Prefixes are enforced, if you specifiy a blank string the name will be `-up` and `-down` which is ugly.. so use prefixes.
+If you have svg files named `up.svg` and `down.svg` being bundled into a svg sprite, by default their sprited names are `icon-up` and `icon-down` respectively. This prefix option allows you to change the prefix taxed onto the sprited symbol names from `icon-` to something custom. Prefixes are enforced, if you specify a blank string the name will be `-up` and `-down` which is ugly.. so use prefixes.
 
 ### xhr
 By default, webpack-svg-spritely will locate the first entry file of your webpack config file, and inject XHR code used to request sprite file. This XHR code is used to request sprite file and inject the symbols into your HTML document for sprite usage.
@@ -100,5 +100,5 @@ Please note, if you turn this feature off and are trying to write your own XHR r
 If you choose to use the xhr option from above, the default request location will be output location + filename (including hash flag if specified in filename option). However if you want to overload this default location you can do so with this option. Please note this setting is absolute pathing while without this setting the request location is relative to output location of sprite file.
 
 ### xhrEntry
-As mention above, the xhr code for requesting sprite file will be injected into your webpack config's FIRST main entry file. If you would like to specify is specific entry file this option allows you to specificy what entry file to inject the XHR code into. This is useful if your webpack config has code splitting within multiple entry files.
+As mention above, the xhr code for requesting sprite file will be injected into your webpack config's FIRST main entry file. If you would like to specify is specific entry file this option allows you to specify what entry file to inject the XHR code into. This is useful if your webpack config has code splitting within multiple entry files.
 
