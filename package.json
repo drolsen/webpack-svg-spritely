@@ -1,6 +1,6 @@
 {
 	"name": "WebpackSVGSpritely",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"description": "Webpack SVG Sprite bundle plugin",
 	"repository": "drolsen/webpack-svg-spritely",
 	"bugs": {

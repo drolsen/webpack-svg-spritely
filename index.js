@@ -13,7 +13,7 @@ const getAssetName = (assetPath) => assetPath.split('/')[assetPath.split('/').le
 
 // Source symbol cleaning helper
 const cleanSymbolContents = (contents, name, option) => {
-  contents = contents.replace(/<svg/g, `<symbol id="${option.suffix}-${name}"`);
+  contents = contents.replace(/<svg/g, `<symbol id="${option.prefix}-${name}"`);
   contents = contents.replace(/<\/svg>/g, '</symbol>');
   contents = contents.replace('xmlns="http://www.w3.org/2000/svg"', '');
   contents = contents.replace(/<style>(.*)<\/style>/g, '<style><![CDATA[$1]]></style>');
@@ -26,11 +26,14 @@ class WebpackSvgSpritely {
     options = options || {};
     this.outputOptions;
     this.options = {
-      suffix: (options.suffix) ? options.suffix : 'icon',
+      xhr: (typeof options.xhr === 'undefined') ? true : options.xhr,
+      prefix: (options.prefix) ? options.prefix : 'icon',
       output: (options.output) ? options.output : '',
-      filename: (options.filename) ? options.filename : `iconset-${generateHash()}.svg`
+      filename: (options.filename) ? options.filename : `iconset-${generateHash()}.svg`,
+      xhrEntry: (options.xhrEntry) ? options.xhrEntry : false
     };
 
+    this.options.xhrPath = (options.xhrPath) ? `${options.xhrPath}/${this.options.filename}` : `${this.options.output}/${this.options.filename}`;
     this.icons = [];
     this.symbols;
   }
@@ -80,55 +83,69 @@ class WebpackSvgSpritely {
       );
 
       // Inject XHR request for iconset-*.svg into assets.js for pageload
-      Object.keys(compilation.assets).map((i) => {
-        if (i.indexOf('assets.js') !== -1) {
-          let XHRTemplate = `
-            ${
-              (!compilation.assets._value) ?
-                `/*
-                  WebpackSVGSpritely iconset XHR code
-                  By: Devin R. Olsen
-                  https://github.com/drolsen/webpack-svg-spritely
-                */`
-                : ''
+
+      if (this.options.xhr) {
+        // get entry file from complation
+        const getEntryFile = (entries) => {
+          let entry;
+          Object.keys(entries).map((i, key) => {
+            if (key === 0) {
+              entry = i;
             }
-            var xhr = new XMLHttpRequest();
-            xhr.open(
-              'GET',
-              '${this.options.output}/${this.options.filename}',
-              true
-            );
+          });
 
-            xhr.onprogress = () => {};
-            xhr.onload = () => {
-              if (!xhr.responseText || xhr.responseText.substr(0, 4) !== '<svg') {
-                throw Error('Invalid SVG Response');
-              }
-              if (xhr.status < 200 || xhr.status >= 300) {
-                return;
-              }
-              var div = document.createElement('div');
-              div.innerHTML = xhr.responseText;
-              document.body.insertBefore(div, document.body.childNodes[0]);
-            };
-            xhr.send();
-          `;
+          return entry;
+        };
 
-          if (compilation.assets[i]._value) {
-            // minification is on
-            // minification helper
-            compilation.assets[i]._value += XHRTemplate
-              .replace(/(\r\n|\n|\r)/gm, '')
-              .replace(/ /g, '')
-              .replace(/var/g, 'var ')
-              .replace(/new/g, 'new ')
-              .trim();
-          } else {
-            // minification is off
-            compilation.assets[i]._source.children.push(XHRTemplate);
-          }
+        // loop over assets in search for an entry file to inject XHR code into
+        const entryFile = (this.options.xhrEntry) ? this.options.xhrEntry : getEntryFile(compilation.compiler.options.entry);
+        if (compilation.compiler.options.entry[entryFile]) {
+          Object.keys(compilation.assets).map((i) => {
+
+            if (i.indexOf(entryFile) !== -1) {
+              let XHRTemplate =`
+                var WP_SVG_XHR = new XMLHttpRequest();
+                WP_SVG_XHR.open(
+                  'GET',
+                  '${this.options.xhrPath}',
+                  true
+                );
+
+                WP_SVG_XHR.onprogress = () => {};
+                WP_SVG_XHR.onload = () => {
+                  if (!WP_SVG_XHR.responseText || WP_SVG_XHR.responseText.substr(0, 4) !== '<svg') {
+                    throw Error('Invalid SVG Response');
+                  }
+                  if (WP_SVG_XHR.status < 200 || WP_SVG_XHR.status >= 300) {
+                    return;
+                  }
+                  var div = document.createElement('div');
+                  div.innerHTML = WP_SVG_XHR.responseText;
+                  document.body.insertBefore(div, document.body.childNodes[0]);
+                };
+                WP_SVG_XHR.send();
+              `.replace(/(\r\n|\n|\r)/gm, '')
+                .replace(/ /g, '')
+                .replace(/var/g, 'var ')
+                .replace(/new/g, 'new ')
+                .trim();
+
+              if (!compilation.compiler.options.optimization.minimize) {
+
+              }
+
+              if (compilation.compiler.options.optimization.minimize) {
+                compilation.assets[i]._value += XHRTemplate;
+              } else {
+                compilation.assets[i]._source.children.push(`\n\n/* WebpackSVGSpritely XHR code\nBy: Devin R. Olsen\nhttps://github.com/drolsen/webpack-svg-spritely */\n`);              
+                compilation.assets[i]._source.children.push(XHRTemplate);
+              }              
+            }
+          });
+        } else {
+          console.warn('\x1b[33mWebpack SVG Spritely has been configured with an unknown custom xhrEntry value.\nXHR code can\'t be injected into an unknown entry files.\nPlease make sure to specify the key name of entry file, not path or filename.*\x1b[37m');
         }
-      });
+      }
     });
   }
 }

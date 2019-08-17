@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="200" height="200" src="/assets/logo.png" />
+  <img src="/assets/logo.png" />
   <p>Plugin that takes project svg files and bundles them into a iconset svg sprite file.</p>
 </div>
 
@@ -7,7 +7,7 @@ By default, webpack-svg-spritely will try to locate your build's entry file and 
 
 ### Install
 ```
-npm install webpack-svg-spritely
+npm install webpack-svg-spritely --saveDev
 ```
 
 ### Webpack Configure
@@ -24,6 +24,14 @@ module.exports = {
   ]
 };
 ```
+
+Make sure to include SVG files into one of your webpack config entry files:
+```js
+require.context('src/project/images/', false, /\.(svg)$/);
+```
+
+If you have not already configured webpack to handle images for including project svg files, have a look see at the test configuration found [https://github.com/drolsen/webpack-svg-spritely/blob/master/test/test.config.js#L16-L27](here) to see how to use `file-loader` with webpack.
+
 Thats it!
 
 

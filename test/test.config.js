@@ -5,11 +5,12 @@ const path = require('path');
 // test webpack config
 const config = {
   entry: {
-    assets: path.resolve(__dirname, 'test.js')
+    testA: path.resolve(__dirname, 'test.a.js'),
+    testB: path.resolve(__dirname, 'test.b.js')
   },
   output: {
     path: path.resolve(__dirname, '../dist'), 
-    filename: `../dist/test.js`,
+    filename: `../dist/[name].js`,
     pathinfo: false
   },
   module: {
@@ -25,7 +26,10 @@ const config = {
         }
       ]
     }]
-  }
+  },
+  optimization: {
+    minimize: false
+  } 
 };
 
 // Prod vs. Dev config customizing
@@ -38,7 +42,7 @@ module.exports = (env, argv) => {
       }
     ),
     new WebpackSVGSpritely({
-      output: `images`
+      output: `images/`
     })
   ];
   return config;
