@@ -29,7 +29,7 @@ class WebpackSvgSpritely {
       xhr: (typeof options.xhr === 'undefined') ? true : options.xhr,
       prefix: (options.prefix) ? options.prefix : 'icon',
       output: (options.output) ? options.output : '',
-      filename: (options.filename) ? options.filename : `iconset-${generateHash()}.svg`,
+      filename: (options.filename) ? options.filename.replace(/\[hash\]/g, generateHash()) : `svgset-${generateHash()}.svg`,
       xhrEntry: (options.xhrEntry) ? options.xhrEntry : false
     };
 
