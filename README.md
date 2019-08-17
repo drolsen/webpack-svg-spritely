@@ -1,16 +1,23 @@
 <div align="center">
-  <img src="/assets/logo.png" />
-  <p>Plugin that takes project svg files and bundles them into a iconset svg sprite file.</p>
+  <img src="/assets/logo.png" /><br />
+  <p>Plugin that bundles project svg files into a sprite file.</p>
 </div>
 
----
+### How it works
+Webpack SVG Spritely taks all incomming SVG files of a given webpack entry file, and then builds svg symbols out of each found file. Once done creating symbols, Webpack SVG spritely writes a svg file of all symbols to disk.
 
+After saving to disk, Webpack SVG Spritely then adds supporting XHR code into your bundle to be ran in browser. Once bundle and supporting XHR is ran your newly created svg sprite file is loaded into the DOM from disk and document is ready for sprite usage.
+
+---
 ### Install
 ```
-npm install webpack-svg-spritely --saveDev
+npm i --save-dev webpack-svg-spritely
+```
+```
+yarn add --dev webpack-svg-spritely
 ```
 
-### Webpack Configure
+### Webpack Config
 Import webpack-svg-spritely into your webpack config file:
 ```json
 const WebpackSVGSpritely = require('webpack-svg-spritely');
@@ -25,18 +32,30 @@ module.exports = {
 };
 ```
 
-Make sure to include SVG files into one of your webpack config entry files:
+Thats it!
+
+### How to use sprite
+To reference SVG sprite parts we use the xmllinkHref / sprite symbol name witin our DOM ([filename] should be subsituted with filename of svg you wish to render):
+
+```xml
+<svg>
+  <use xlinkHref="#icon-[filename]" />
+</svg>
+```
+
+### Requirements
+The only requirement Webpack SVG Spritely has, is that you are passing SVG's through your build system, not just coping them from one location to another by means of copy-webpack-plugin.
+
+Include SVG files into one of your webpack config entry files like so:
 ```js
 require.context('src/project/images/', false, /\.(svg)$/);
 ```
 
-If you have not already configured webpack to handle images for including project svg files, have a look see at the test configuration found [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/test.config.js#L16-L27) to see how to use `file-loader` with webpack.
+If you have not already configured your webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source svg files into your bundle(s).
 
-Thats it!
+For any questions around webpack image configuration, please first review [repository test files](https://github.com/drolsen/webpack-svg-spritely/tree/master/test) before opening an issue.
 
 ---
-
-By default, webpack-svg-spritely will try to locate your build's entry file and inject needed XHR code to request the bundled svg sprite file at page load, however if you would like use opt of of this feature or better specify what entry file to include XHR code into, see options below.
 
 ## Options
 
