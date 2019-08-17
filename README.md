@@ -139,10 +139,10 @@ module.exports = {
     testA: 'test.a.js',
     testB: 'test.b.js'
   },	
-    "plugins": [
-      new WebpackSVGSpritely({
-        xhrEntry: 'testA'
-      })
+  "plugins": [
+    new WebpackSVGSpritely({
+      xhrEntry: 'testA'
+    })
   ]
 };
 
