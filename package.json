@@ -9,9 +9,14 @@
 	"author": "Devin R. Olsen <devin@devinrolsen.com> (http://devinrolsen.com)",
 	"license": "MIT",
 	"scripts": {
+		"test": "npm run basic-test && npm run entry-test && npm run filename-test && npm run path-test && npm run inject-xhr-test && npm run inject-sprite-test && npm run inject-nothing-test",
 		"basic-test": "webpack --config ./test/basic.test.config.js --mode production",
 		"entry-test": "webpack --config ./test/entry.test.config.js --mode production",
-		"filename-test": "webpack --config ./test/filename.test.config.js --mode production"
+		"filename-test": "webpack --config ./test/filename.test.config.js --mode production",
+		"path-test": "webpack --config ./test/path.test.config.js --mode production",
+		"inject-xhr-test": "webpack --config ./test/inject.xhr.test.config.js --mode production",
+		"inject-sprite-test": "webpack --config ./test/inject.sprite.test.config.js --mode production",
+		"inject-nothing-test": "webpack --config ./test/inject.nothing.test.config.js --mode production"
 	},
 	"engines": {
 		"node": ">=10.15.1"
