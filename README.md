@@ -36,7 +36,7 @@ module.exports = {
 Thats it!
 
 ### How to use sprite
-To reference SVG sprite parts we use the `xlinkHref` / sprite symbol name within our DOM.
+To reference SVG sprite parts in DOM, use the `xlinkHref` within a svg tag:
 
 ```xml
 <svg>
@@ -50,7 +50,7 @@ To reference SVG sprite parts we use the `xlinkHref` / sprite symbol name within
 ### Requirements
 The only requirement Webpack SVG Spritely has, is that you are passing SVG's through your build system, not just coping them from one location to another by means of copy-webpack-plugin.
 
-Include SVG files into one of your webpack config entry files like so:
+Include SVG files into one of your webpack config entry files:
 ```js
 require.context('src/project/images/', false, /\.(svg)$/);
 ```
