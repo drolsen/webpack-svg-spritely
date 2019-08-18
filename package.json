@@ -6,15 +6,15 @@
 	"bugs": {
 		"url": "https://github.com/drolsen/webpack-svg-spritely/issues"
 	},
-	"engines": {
-		"node": ">=10.15.1"
-	},
 	"author": "Devin R. Olsen <devin@devinrolsen.com> (http://devinrolsen.com)",
 	"license": "MIT",
 	"scripts": {
 		"basic-test": "webpack --config ./test/basic.test.config.js --mode production",
 		"entry-test": "webpack --config ./test/entry.test.config.js --mode production",
-		"filename-test": "webpack --config ./test/filename.test.config.js --mode production",
+		"filename-test": "webpack --config ./test/filename.test.config.js --mode production"
+	},
+	"engines": {
+		"node": ">=10.15.1"
 	},
 	"devDependencies": {
 		"clean-webpack-plugin": "^0.1.19",
