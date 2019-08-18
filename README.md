@@ -1,11 +1,13 @@
 <div align="center">
-  <img src="/assets/logo.png" width="300" /><br />
-  <p>Plugin that bundles project SVG files into a SVG sprite.</p>
+  <img src="/assets/logo.png" width="300" />
+  <p style="margin-top: 25px;">Plugin that bundles project SVG files into a SVG sprite.</p>
+  <div>
+    [![Build Status](https://travis-ci.com/drolsen/webpack-svg-spritely.svg?branch=master)](https://travis-ci.com/drolsen/webpack-svg-spritely)
+    [![dependencies Status](https://david-dm.org/drolsen/webpack-svg-spritely/status.svg)](https://david-dm.org/drolsen/webpack-svg-spritely)
+    [![devDependencies Status](https://david-dm.org/drolsen/webpack-svg-spritely/dev-status.svg)](https://david-dm.org/drolsen/webpack-svg-spritely?type=dev)
+  </div>
 </div>
 
-[![Build Status](https://travis-ci.com/drolsen/webpack-svg-spritely.svg?branch=master)](https://travis-ci.com/drolsen/webpack-svg-spritely)
-[![dependencies Status](https://david-dm.org/drolsen/webpack-svg-spritely/status.svg)](https://david-dm.org/drolsen/webpack-svg-spritely)
-[![devDependencies Status](https://david-dm.org/drolsen/webpack-svg-spritely/dev-status.svg)](https://david-dm.org/drolsen/webpack-svg-spritely?type=dev)
 
 ### How it works
 Webpack SVG Spritely takes all incoming SVGs of a given build entry file and creates svg symbols out of each found SVG. Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk of all created symbols.
