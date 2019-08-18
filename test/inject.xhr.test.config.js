@@ -5,8 +5,7 @@ const path = require('path');
 // test webpack config
 const config = {
   entry: {
-    testA: path.resolve(__dirname, 'test.a.js'),
-    testB: path.resolve(__dirname, 'test.b.js')
+    testA: path.resolve(__dirname, 'test.a.js')
   },
   output: {
     path: path.resolve(__dirname, '../dist'), 
@@ -42,7 +41,8 @@ module.exports = (env, argv) => {
       }
     ),
     new WebpackSVGSpritely({
-      output: `images/`
+      output: `images/`,
+      xhr: true
     })
   ];
   return config;

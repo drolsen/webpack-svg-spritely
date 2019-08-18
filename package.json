@@ -9,7 +9,7 @@
 	"author": "Devin R. Olsen",
 	"license": "MIT",
 	"scripts": {
-		"test": "webpack --config ./test/test.config.js --mode production"
+		"test": "webpack --config ./test/inject.sprite.test.config.js --mode production"
 	},
 	"devDependencies": {
 		"clean-webpack-plugin": "^0.1.19",

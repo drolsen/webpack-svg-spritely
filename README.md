@@ -4,7 +4,7 @@
 </div>
 
 ### How it works
-Webpack SVG Spritely takes all incoming SVGs of a givenbuild entry file and creates svg symbols out of each found SVG. Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk of all created symbols.
+Webpack SVG Spritely takes all incoming SVGs of a given build entry file and creates svg symbols out of each found SVG. Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk of all created symbols.
 
 Webpack SVG Spritely also adds supporting XHR code into your build entry file to be ran in browser (optional).
 Once ran in browser, newly created SVG sprite file is loaded into the DOM from disk and document is ready for sprite usage.
@@ -73,11 +73,11 @@ module.exports = {
 Option | Types | Description | Default
 --- | --- | --- | ---
 `output` | String | Location of where sprite file gets output. | Webpack config output location.
-`filename` | String | Name of the sprite file. | iconset.svg
+`filename` | String | Name of the sprite file. | spritely-[hash].svg
 `prefix` | String | Prefix used in the sprite file symbol's name | icon-
-`xhr` | Bool | Defines if XHR code for sprite file should be injected into Webpack config entry file. | true
+`xhr` | Bool | Defines if XHR code, Sprite source or nothing gets injected into entry file. | true
 `xhrPath` | String | Defines the path of where XHR code should request for icon sprite file. | Webpack config output location + plugin output directory.
-`xhrEntry` | String | Defines what entry file to inject XHR code into.
+`xhrEntry` | String | Defines what entry file to inject XHR code into. | First entry file of Webpack config's entry settings
 
 ### output
 With the output option you can specify a deeper location within the main webpack output configuration. This is useful for project organization.
@@ -89,13 +89,19 @@ new WebpackSVGSpritely({
 ```
 
 ### filename
-This option allows you to specify the name of the sprite file that gets bundled. You can use a [hash] flag to combat cache.
+This option allows you to specify the name of the sprite file that gets bundled. You can use a [hash] flag to combine a cache pop MD5 hash to filename and XHR endpoint (if XHR is enabled).
 
 Please note if you use a hash pop within file names, you are subjected to unique hash numbers per build and will make targeting the file with custom XHR methods outside of webpack-svg-spritely's XHR code difficult if not impossible.
 
 ```js
 new WebpackSVGSpritely({
-  filename: 'custom-[hash].svg'
+  filename: 'customName-[hash].svg'
+})
+```
+or
+```js
+new WebpackSVGSpritely({
+  filename: 'customName.svg'
 })
 ```
 
@@ -104,16 +110,28 @@ If you have svg files named `up.svg` and `down.svg` being bundled into a svg spr
 
 ```js
 new WebpackSVGSpritely({
-  prefix: 'custom-prefix' // becomes <symbol name="custom-prefix-filename">
+  prefix: 'SVGSprite' // becomes <symbol name="custom-prefix-filename">
 })
+```
+which effect sprite usage:
+```xml
+<svg>
+  <use xlinkHref="#SVGSprite-up" />
+</svg>
+
+<svg>
+  <use xlinkHref="#SVGSprite-down" />
+</svg>
 ```
 
 ### xhr
-By default, webpack-svg-spritely will locate the first entry file of your webpack config file, and inject XHR code used to request sprite file. This XHR code is used to request sprite file and inject the symbols into your HTML document for sprite usage.
+By default Webpack SVG Spritely will inject code used to request sprite file contents into DOM by means of XHR. This is to help reduce your bundle size to offloading sprite source to a svg file on disk.
 
-This option allows you to turn this feature off and not inject XHR code into any entry files. This is useful if you want to use server side to inject the sprite file contents into DOM instead.
+However, you can also bypass this XHR approach by setting the `xhr` option to false. Setting this option to false will not write a sprite file to disk; instead the sprite contents will be injected directly into your bundle along.
 
-Please note, if you turn this feature off and are trying to write your own XHR request, you must not use [hash] flags in our filename option from above to predict.
+If you wish no XHR or sprite source be injected to bundles at all (but still write sprite to disk), set this option to `other`. Useful if you want to use a server side approach to inject the sprite contents into DOM instead.
+
+Warning: if setting this option to `other` while having a sprite filename using a [hash], it will be impossible to write your own XHR method. Either use Webpack SVG Spritely's XHR method or don't leave blank or use a [hash] within the filename option.
 
 ```js
 new WebpackSVGSpritely({
@@ -148,3 +166,21 @@ module.exports = {
 
 
 ```
+
+### Tests
+
+Webpack SVG Spritely comes with a number of tests found under `/tests`. These are here to help you better understand the expectations of each option we covered above.
+
+Simply run `npm run test` or `yarn test` from the root of the plugin to run a basic test. Running a test will produce a `/dist` directory, with each test, review the bottom of the bundled .js file and the sprite file to gather a understanding of changes taking place from test to test.
+
+If you would like to change a test, update the root package.json file's `test` script to use any of the `/test/*.test.config.js` files.
+
+- `basic.test.config.js` = Should produce a out of the box sprite file and inject XHR code into bundled entry file.
+- `entry.test.config.js` = Should produce a out of the box sprite file and inject XHR code into specified entry file.
+- `filename.test.config.js` = Should produce a sprite file with custom name and use MD5 cache poping [hash] flag.
+- `path.test.config.js` = Should set custom XHR endpoint path within the injected XHR code.
+- `inject.nothing.test.config.js` = Should inject nothing into entry file, but write sprite file to disk still.
+- `inject.xhr.test.config.js` = Should inject xhr code into entry file and write sprite to disk.
+- `inject.sprite.test.config.js` = Should inject sprite code instead of xhr code into entry file and write sprite to disk.
+
+`test.a.js` and `test.b.js` files are our test supporting entry files, not test configurations. Both these files are requiring our test svg files which is a requirement of Webpack SVG Spritely.
