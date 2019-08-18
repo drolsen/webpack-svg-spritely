@@ -49,7 +49,7 @@ To reference SVG sprite parts in DOM, use the `xlinkHref` within a svg tag:
 </svg>
 ```
 
-- [filename] would be substituted with the actual filename of source svg you wish to render.
+- `[filename]` would be substituted with the actual filename of source svg you wish to render.
 - `icon-` prefix of the xlinkHref is default of Webpack SVG Spritely, but can be customized with the `prefix` option below.
 
 ### Requirements
@@ -60,7 +60,7 @@ Include SVG files into one of your webpack config entry files:
 require.context('src/project/images/', false, /\.(svg)$/);
 ```
 
-If you have not already configured your webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source svg files into your bundle(s).
+If you have not already configured your webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/basic.test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source svg files into your bundle(s).
 
 For any questions around webpack image configuration, please first review [repository test files](https://github.com/drolsen/webpack-svg-spritely/tree/master/test) before opening an issue.
 
@@ -85,7 +85,7 @@ Option | Types | Description | Default
 `prefix` | String | Prefix used in the sprite file symbol's name | icon-
 `xhr` | Bool | Defines if XHR code, Sprite source or nothing gets injected into entry file. | true
 `xhrPath` | String | Defines the path of where XHR code should request for icon sprite file. | Webpack config output location + plugin output directory.
-`xhrEntry` | String | Defines what entry file to inject XHR code into. | First entry file of Webpack config's entry settings
+`xhrEntry` | String | Defines what entry file to inject XHR code or sprite contents into. | First entry file of Webpack config's entry settings
 
 ### output
 With the output option you can specify a deeper location within the main webpack output configuration. This is useful for project organization.
@@ -97,7 +97,7 @@ new WebpackSVGSpritely({
 ```
 
 ### filename
-This option allows you to specify the name of the sprite file that gets bundled. You can use a [hash] flag to combine a cache pop MD5 hash to filename and XHR endpoint (if XHR is enabled).
+This option allows you to specify the name of the sprite file that gets bundled. You can use a `[hash]` flag to combine a cache pop MD5 hash to filename and XHR endpoint (if XHR is enabled).
 
 Please note if you use a hash pop within file names, you are subjected to unique hash numbers per build and will make targeting the file with custom XHR methods outside of webpack-svg-spritely's XHR code difficult if not impossible.
 
@@ -118,7 +118,7 @@ If you have svg files named `up.svg` and `down.svg` being bundled into a svg spr
 
 ```js
 new WebpackSVGSpritely({
-  prefix: 'SVGSprite' // becomes <symbol name="custom-prefix-filename">
+  prefix: 'SVGSprite' // becomes <symbol name="SVGSprite-filename">
 })
 ```
 which effect sprite usage:
@@ -135,11 +135,11 @@ which effect sprite usage:
 ### xhr
 By default Webpack SVG Spritely will inject code used to request sprite file contents into DOM by means of XHR. This is to help reduce your bundle size to offloading sprite source to a svg file on disk.
 
-However, you can also bypass this XHR approach by setting the `xhr` option to false. Setting this option to false will not write a sprite file to disk; instead the sprite contents will be injected directly into your bundle along.
+However, you can also bypass this XHR approach by setting the `xhr` option to false. Setting this option to false will not write a sprite file to disk; instead the sprite contents will be injected directly into your bundle.
 
-If you wish no XHR or sprite source be injected to bundles at all (but still write sprite to disk), set this option to `other`. Useful if you want to use a server side approach to inject the sprite contents into DOM instead.
+If you wish no XHR or sprite source be injected to bundles at all (but still sprite written to disk), set this option to `'other'`. Useful if you want to use a server side approach to inject the sprite contents into DOM instead.
 
-Warning: if setting this option to `other` while having a sprite filename using a [hash], it will be impossible to write your own XHR method. Either use Webpack SVG Spritely's XHR method or don't leave blank or use a [hash] within the filename option.
+*Warning:* if setting this option to `'other'` while having a sprite filename using a `[hash]` flag, it will be impossible to write your own XHR method. Either use Webpack SVG Spritely's XHR method or don't use a `[hash]` flag within the filename.
 
 ```js
 new WebpackSVGSpritely({
