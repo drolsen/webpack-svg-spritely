@@ -36,13 +36,16 @@ module.exports = {
 Thats it!
 
 ### How to use sprite
-To reference SVG sprite parts we use the xmllinkHref / sprite symbol name within our DOM ([filename] should be substituted with filename of svg you wish to render):
+To reference SVG sprite parts we use the `xlinkHref` / sprite symbol name within our DOM.
 
 ```xml
 <svg>
   <use xlinkHref="#icon-[filename]" />
 </svg>
 ```
+
+- [filename] would be substituted with the actual filename of source svg you wish to render.
+- `icon-` prefix of the xlinkHref is default of Webpack SVG Spritely, but can be customized with the `prefix` option below.
 
 ### Requirements
 The only requirement Webpack SVG Spritely has, is that you are passing SVG's through your build system, not just coping them from one location to another by means of copy-webpack-plugin.
@@ -177,7 +180,7 @@ If you would like to change a test, update the root package.json file's `test` s
 
 - `basic.test.config.js` = Should produce a out of the box sprite file and inject XHR code into bundled entry file.
 - `entry.test.config.js` = Should produce a out of the box sprite file and inject XHR code into specified entry file.
-- `filename.test.config.js` = Should produce a sprite file with custom name and use MD5 cache poping [hash] flag.
+- `filename.test.config.js` = Should produce a sprite file with custom name and use MD5 cache popping [hash] flag.
 - `path.test.config.js` = Should set custom XHR endpoint path within the injected XHR code.
 - `inject.nothing.test.config.js` = Should inject nothing into entry file, but write sprite file to disk still.
 - `inject.xhr.test.config.js` = Should inject xhr code into entry file and write sprite to disk.
