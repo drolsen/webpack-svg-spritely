@@ -1,4 +1,4 @@
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const WebpackSVGSpritely = require('../index.js');
 const path = require('path');
 
@@ -34,12 +34,7 @@ const config = {
 // Prod vs. Dev config customizing
 module.exports = (env, argv) => {
   config.plugins = [
-    new CleanWebpackPlugin(
-      [`${config.output.path}`], // reuse config output path from above
-      {
-        'root': path.resolve(config.output.path, '../') // focus plugins root out of build/config/
-      }
-    ),
+    new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
       output: `images/`,
       xhr: 'other'
