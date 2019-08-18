@@ -3,6 +3,8 @@
   <p>Plugin that bundles project SVG files into a SVG sprite.</p>
 </div>
 
+[![Build Status](https://travis-ci.com/drolsen/webpack-svg-spritely.svg?branch=master)](https://travis-ci.com/drolsen/webpack-svg-spritely)
+
 ### How it works
 Webpack SVG Spritely takes all incoming SVGs of a given build entry file and creates svg symbols out of each found SVG. Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk of all created symbols.
 
