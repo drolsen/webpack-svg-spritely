@@ -170,6 +170,8 @@ module.exports = {
 
 ```
 
+---
+
 ### Tests
 
 Webpack SVG Spritely comes with a number of tests found under `/tests`. These are here to help you better understand the expectations of each option we covered above.
