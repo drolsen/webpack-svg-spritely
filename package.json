@@ -1,12 +1,12 @@
 {
 	"name": "WebpackSVGSpritely",
 	"version": "1.0.0",
-	"description": "Webpack SVG Sprite bundle plugin",
+	"description": "Plugin that bundles project SVG files into a SVG sprite",
 	"repository": "drolsen/webpack-svg-spritely",
 	"bugs": {
 		"url": "https://github.com/drolsen/webpack-svg-spritely/issues"
 	},
-	"author": "Devin R. Olsen",
+	"author": "Devin R. Olsen <devin@devinrolsen.com> (http://devinrolsen.com)",
 	"license": "MIT",
 	"scripts": {
 		"test": "webpack --config ./test/inject.sprite.test.config.js --mode production"

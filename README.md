@@ -1,6 +1,6 @@
 <div align="center">
   <img src="/assets/logo.png" width="300" /><br />
-  <p>Plugin that bundles project svg files into a sprite file.</p>
+  <p>Plugin that bundles project SVG files into a SVG sprite.</p>
 </div>
 
 ### How it works
