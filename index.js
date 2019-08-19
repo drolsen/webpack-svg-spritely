@@ -83,8 +83,8 @@ class WebpackSvgSpritely {
     };
 
     this.options.url = (options.url)
-      ? `${options.url}/${this.options.filename}`
-      : `${this.options.output}/${this.options.filename}`;
+      ? `/${options.url}/${this.options.filename}`
+      : `/${this.options.output}/${this.options.filename}`;
   }
 
   apply(compiler) {
