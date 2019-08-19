@@ -7,12 +7,12 @@
 [![devDependencies Status](https://david-dm.org/drolsen/webpack-svg-spritely/dev-status.svg)](https://david-dm.org/drolsen/webpack-svg-spritely?type=dev)
 </div>
 
-
 ### How it works
-Webpack SVG Spritely takes all incoming SVGs of a given build entry file and creates svg symbols out of each found SVG. Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk of all created symbols.
+Webpack SVG Spritely takes all incoming SVG files of a given build entry and creates symbols out of each found file. Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk of all SVG symbols.
 
-Webpack SVG Spritely also adds supporting XHR code into your build entry file to be ran in browser (optional).
-Once ran in browser, newly created SVG sprite file is loaded into the DOM from disk and document is ready for sprite usage.
+Once ran in browser, your newly created SVG sprite file is loaded into the DOM from disk and document is ready for sprite usage.
+
+It's that simple!
 
 ---
 ### Install
@@ -24,12 +24,12 @@ yarn add --dev webpack-svg-spritely
 ```
 
 ### Webpack Config
-Import webpack-svg-spritely into your webpack config file:
+Import webpack-svg-spritely into your Webpack configuration file:
 ```js
 const WebpackSVGSpritely = require('webpack-svg-spritely');
 ```
 
-Instantiate a new WebpackSVGSpritely() class within Webpack config's plugin array:
+Instantiate a new WebpackSVGSpritely() class within Webpack configuration's plugin array:
 ```js
 module.exports = {
   "plugins": [
@@ -40,8 +40,8 @@ module.exports = {
 
 Thats it!
 
-### How to use sprite
-To reference SVG sprite parts in DOM, use the `xlinkHref` within a svg tag:
+### Using Sprite Parts
+To reference SVG sprite parts in DOM, use the `xlinkHref` within a SVG tag:
 
 ```xml
 <svg>
@@ -49,18 +49,18 @@ To reference SVG sprite parts in DOM, use the `xlinkHref` within a svg tag:
 </svg>
 ```
 
-- `[filename]` would be substituted with the actual filename of source svg you wish to render.
-- `icon-` prefix of the xlinkHref is default of Webpack SVG Spritely, but can be customized with the `prefix` option below.
+- `[filename]` would be substituted with the actual filename of source SVG you wish to render.
+- `icon-` prefix of the xlinkHref is default of Webpack SVG Spritely but can be customized with the `prefix` option below.
 
-### Requirements
+### Plugin Requirements
 The only requirement Webpack SVG Spritely has, is that you are passing SVG's through your build system, not just coping them from one location to another by means of copy-webpack-plugin.
 
-Include SVG files into one of your Webpack config entry files:
+Include all SVG files into your Webpack entry file(s):
 ```js
 require.context('src/project/images/', false, /\.(svg)$/);
 ```
 
-If you have not already configured your Webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/basic.test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source svg files into your bundle(s).
+If you have not already configured your Webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/basic.test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source SVG files into your bundle(s).
 
 For any questions around Webpack image configuration, please first review [repository test files](https://github.com/drolsen/webpack-svg-spritely/tree/master/test) before opening an issue.
 
@@ -80,15 +80,17 @@ module.exports = {
 
 Option | Types | Description | Default
 --- | --- | --- | ---
-`filename` | String | Name of the sprite file. | spritely-[hash].svg
-`output` | String | Location of where sprite file gets output. | Webpack config output location.
+`filename` | String | Name of the sprite file. | iconset-[hash].svg
+`output` | String | Location of where sprite file gets output. | Webpack configured output location.
 `prefix` | String | Prefix used in the sprite file symbol's name | icon-
-`entry` | String | Defines what entry file to inject XHR code or sprite contents into. | First entry file of Webpack config's entry settings
+`entry` | String | Defines what entry file to inject XHR code or sprite contents into. | First entry file of Webpack configuration's entry settings
 `xhr` | True, False, 'Other' | Defines if XHR code, Sprite source or nothing gets injected into entry file. | true
-`url` | String | Defines the path of where XHR code should request for icon sprite file. | Webpack config output location + plugin output directory.
+`url` | String | Defines the path of where XHR code should request for icon sprite file. | Webpack configured output location + plugin output directory.
 
-### output
-With the output option you can specify a deeper location within the main Webpack output configuration. This is useful for project organization.
+## options.output
+With the `output` option, you can specify a deeper location (relative to the Webpack's `output` configuration) to where this plugin should write the sprite file under.
+
+Without this option, the sprite file will be written to the root of your Webpack configuration's output location.
 
 ```js
 new WebpackSVGSpritely({
@@ -96,50 +98,54 @@ new WebpackSVGSpritely({
 })
 ```
 
-### filename
-This option allows you to specify the name of the sprite file that gets bundled. You can use a `[hash]` flag to combine a cache pop MD5 hash to filename and XHR endpoint (if XHR is enabled).
+## optins.filename
+This option allows you to specify a name for the sprite file.
+You can use a `[hash]` flag to combine a cache pop MD5 hash to filename and XHR endpoint (if XHR is enabled of course).
 
-Please note if you use a hash pop within file names, you are subjected to unique hash numbers per build and will make targeting the file with custom XHR methods outside of webpack-svg-spritely's XHR code difficult if not impossible.
+Please note; if you using a [hash] flag within `filename` you are subjected to unique hash numbers per build. Consider removing `[hash]` flag, if you have logic beyond this plugin that needs a consistent sprite file name out on disk.
 
 ```js
 new WebpackSVGSpritely({
   filename: 'customName-[hash].svg'
 })
 ```
-or
+or with out `[hash]` flag
 ```js
 new WebpackSVGSpritely({
   filename: 'customName.svg'
 })
 ```
 
-### prefix
-If you have svg files named `up.svg` and `down.svg` being bundled into a svg sprite, by default their sprited names are `icon-up` and `icon-down` respectively. This prefix option allows you to change the prefix taxed onto the sprited symbol names from `icon-` to something custom. Prefixes are enforced, if you specify a blank string the name will be `-up` and `-down` which is ugly.. so use prefixes.
+## options.prefix
+The `prefix` option allows you to change the symbol id prefix from `icon-` to something custom. 
+For example; if you have SVG files named `up.svg` and `down.svg` being bundled into a SVG sprite. By default both `up.svg` and `down.svg` sprited ids are `icon-up` and `icon-down` respectively.
+
+Prefixes are enforced; if you specify a blank string, the name will be `-up` and `-down` which is ugly..
+Use prefixes!
 
 ```js
 new WebpackSVGSpritely({
-  prefix: 'SVGSprite' // becomes <symbol name="SVGSprite-filename">
+  prefix: 'myPrefix' // becomes <symbol name="SVGSprite-filename">
 })
 ```
 which effect sprite usage:
 ```xml
 <svg>
-  <use xlinkHref="#SVGSprite-up" />
+  <use xlinkHref="#myPrefix-up" />
 </svg>
 
 <svg>
-  <use xlinkHref="#SVGSprite-down" />
+  <use xlinkHref="#myPrefix-down" />
 </svg>
 ```
 
-### xhr
+## options.xhr
 By default Webpack SVG Spritely will inject code used to request sprite file contents into DOM by means of XHR. This is to help reduce your bundle size to offloading sprite source to a svg file on disk.
 
 However, you can also bypass this XHR approach by setting the `xhr` option to false. Setting this option to false will not write a sprite file to disk; instead the sprite contents will be injected directly into your bundle.
 
-If you wish no XHR or sprite source be injected to bundles at all (but still sprite written to disk), set this option to `'other'`. Useful if you want to use a server side approach to inject the sprite contents into DOM instead.
-
-*Warning:* if setting this option to `'other'` while having a sprite filename using a `[hash]` flag, it will be impossible to write your own XHR method. Either use Webpack SVG Spritely's XHR method or don't use a `[hash]` flag within the filename.
+If you wish to have no XHR, or sprite source be injected to bundles at all (but still want sprite written to disk), set this option to `'other'`. 
+(This is useful if you want to use a server-side approach to inject the sprite contents into DOM instead.)
 
 ```js
 new WebpackSVGSpritely({
@@ -147,8 +153,8 @@ new WebpackSVGSpritely({
 })
 ```
 
-### url
-If you choose to use the xhr option from above, the default request location will be output location + filename (including hash flag if specified in filename option). However if you want to overload this default request endpoint, you can do so with this `url` option.
+## options.url
+If you choose to use the `xhr` option from above, the default request location will be `output location + filename`. However, if you want to overload this default XHR endpoint you can do so with this `url` option.
 
 ```js
 new WebpackSVGSpritely({
@@ -156,12 +162,12 @@ new WebpackSVGSpritely({
 })
 ```
 
-### entry
-XHR code or sprite contents will be injected into your first found entry .js file for a given build.
-If you would like to specify a specific entry file, this `entry` option will allow you to do.
+## options.entry
+XHR code or sprite contents will be injected into your first found entry .js file for a given build automatically.
+If you would like to specify a which entry file to inject code into, this `entry` option will allow you to do just that.
 
-This is useful if your Webpack configuration has multiple entry points due to  code splitting.
-Note: Please notice how output.filename (example #2) down below changes the configuration of this option.
+This is useful if Webpack has been configured with multiple entry points (code splitting).
+Please take note on how `output.filename` (example #2 down below) changes the configuration of this `entry` option usage.
 
 ```js
 module.exports = {
@@ -202,9 +208,10 @@ module.exports = {
 
 ### Tests
 
-Webpack SVG Spritely comes with a number of tests found under `/tests`. These are here to help you better understand the expectations of each option we covered above.
+Webpack SVG Spritely comes with a number of tests found under `/tests`.
+These are here to help you better understand the expectations of each option we covered above.
 
-Simply run `npm run test` or `yarn test` from the root of the plugin to run a basic test. Running a test will produce a `/dist` directory, with each test, review the bottom of the bundled .js file and the sprite file to gather a understanding of changes taking place from test to test.
+Simply run `npm run test` or `yarn test` from the root of the plugin to run all tests. Running a test will produce a `/dist/[test]` directories. With each test, be sure to review the bottom of the bundled.js file(s), and the sprite file to understanding changes taking place from test to test.
 
 If you would like to change a test, update the root package.json file's `test` script to use any of the `/test/*.test.config.js` files.
 
