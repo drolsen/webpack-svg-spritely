@@ -29,7 +29,7 @@ Import webpack-svg-spritely into your webpack config file:
 const WebpackSVGSpritely = require('webpack-svg-spritely');
 ```
 
-Instantiate a new WebpackSVGSpritely() class within webpack config's plugin array:
+Instantiate a new WebpackSVGSpritely() class within Webpack config's plugin array:
 ```js
 module.exports = {
   "plugins": [
@@ -55,14 +55,14 @@ To reference SVG sprite parts in DOM, use the `xlinkHref` within a svg tag:
 ### Requirements
 The only requirement Webpack SVG Spritely has, is that you are passing SVG's through your build system, not just coping them from one location to another by means of copy-webpack-plugin.
 
-Include SVG files into one of your webpack config entry files:
+Include SVG files into one of your Webpack config entry files:
 ```js
 require.context('src/project/images/', false, /\.(svg)$/);
 ```
 
-If you have not already configured your webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/basic.test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source svg files into your bundle(s).
+If you have not already configured your Webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/basic.test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source svg files into your bundle(s).
 
-For any questions around webpack image configuration, please first review [repository test files](https://github.com/drolsen/webpack-svg-spritely/tree/master/test) before opening an issue.
+For any questions around Webpack image configuration, please first review [repository test files](https://github.com/drolsen/webpack-svg-spritely/tree/master/test) before opening an issue.
 
 ---
 
@@ -80,15 +80,15 @@ module.exports = {
 
 Option | Types | Description | Default
 --- | --- | --- | ---
-`output` | String | Location of where sprite file gets output. | Webpack config output location.
 `filename` | String | Name of the sprite file. | spritely-[hash].svg
+`output` | String | Location of where sprite file gets output. | Webpack config output location.
 `prefix` | String | Prefix used in the sprite file symbol's name | icon-
-`xhr` | Bool | Defines if XHR code, Sprite source or nothing gets injected into entry file. | true
-`xhrPath` | String | Defines the path of where XHR code should request for icon sprite file. | Webpack config output location + plugin output directory.
-`xhrEntry` | String | Defines what entry file to inject XHR code or sprite contents into. | First entry file of Webpack config's entry settings
+`entry` | String | Defines what entry file to inject XHR code or sprite contents into. | First entry file of Webpack config's entry settings
+`xhr` | True, False, 'Other' | Defines if XHR code, Sprite source or nothing gets injected into entry file. | true
+`url` | String | Defines the path of where XHR code should request for icon sprite file. | Webpack config output location + plugin output directory.
 
 ### output
-With the output option you can specify a deeper location within the main webpack output configuration. This is useful for project organization.
+With the output option you can specify a deeper location within the main Webpack output configuration. This is useful for project organization.
 
 ```js
 new WebpackSVGSpritely({
@@ -147,33 +147,56 @@ new WebpackSVGSpritely({
 })
 ```
 
-### xhrPath
-If you choose to use the xhr option from above, the default request location will be output location + filename (including hash flag if specified in filename option). However if you want to overload this default location you can do so with this option. Please note this setting is absolute pathing while without this setting the request location is relative to output location of sprite file.
+### url
+If you choose to use the xhr option from above, the default request location will be output location + filename (including hash flag if specified in filename option). However if you want to overload this default request endpoint, you can do so with this `url` option.
 
 ```js
 new WebpackSVGSpritely({
-  xhrPath: '/~/custom/production/path'
+  url: '/~/custom/production/path'
 })
 ```
 
-### xhrEntry
-As mention above, the xhr code for requesting sprite file will be injected into your webpack config's FIRST main entry file. If you would like to specify is specific entry file this option allows you to specify what entry file to inject the XHR code into. This is useful if your webpack config has code splitting within multiple entry files.
+### entry
+XHR code or sprite contents will be injected into your first found entry .js file for a given build.
+If you would like to specify a specific entry file, this `entry` option will allow you to do.
+
+This is useful if your Webpack configuration has multiple entry points due to  code splitting.
+Note: Please notice how output.filename (example #2) down below changes the configuration of this option.
 
 ```js
 module.exports = {
   "entry": {
     testA: 'test.a.js',
     testB: 'test.b.js'
-  },	
+  },
+  output: {
+    filename: '../dist/basic/[name].js'
+  },
   "plugins": [
     new WebpackSVGSpritely({
-      xhrEntry: 'testA'
+      entry: 'testB' // or testB.js
     })
   ]
 };
-
-
 ```
+
+```js
+module.exports = {
+  "entry": {
+    testA: 'test.a.js',
+    testB: 'test.b.js'
+  },
+  output: {
+    filename: '../dist/basic/custom-[name].js'
+  },
+  "plugins": [
+    new WebpackSVGSpritely({
+      entry: 'custom-testB'
+    })
+  ]
+};
+```
+
 
 ---
 

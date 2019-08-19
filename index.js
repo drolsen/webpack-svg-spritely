@@ -1,15 +1,59 @@
 const crypto = require('crypto');
 
+// Asset name helper
+const getAssetName = (assetPath) => assetPath.split('/')[assetPath.split('/').length - 1].replace(/(.*)\.(.*)/, '$1');
+
+// Extension helper
+const getExtension = (path) => path.split('.')[path.split('.').length - 1];
+
+// Entry helper
+const getEntryFile = (chunks, entries, requestEntry = false) => {
+  let entry = {};
+
+  const parseFiles = (files, name) => {
+    Object.keys(files).map((i) => {
+      // if requesting specific entry file
+      if (requestEntry && files[i].indexOf(requestEntry) !== -1) {
+        entry = {
+          name: name,
+          filename: getAssetName(files[i]),
+          extension: getExtension(files[i]),
+          path: files[i]
+        };
+      }
+
+      // first found js entry file if none is specified
+      if (!requestEntry && files[i].indexOf('.js') !== -1 && !entry.name) {
+        entry = {
+          name: name,
+          filename: getAssetName(files[i]),
+          extension: getExtension(files[i]),
+          path: files[i]
+        };
+      }
+    });
+  };
+
+  // Parse our chunk's files for an entry
+  Object.keys(chunks).map((i) => parseFiles(chunks[i].files, chunks[i].name));
+
+  // Warn developers about unfound entries (corner cases catch)
+  if (!entry.name) {
+    console.error(`\n\x1b[31mWarning: Webpack SVG Spritely can't find a "${requestEntry}.js" entry file.\nPlease check your Webpack SVG Spritely configuration and try again.\x1b[37m\n`);
+  }
+
+  // if entry option is configured, use it over our first entry from webpack config
+  return entry;
+};
+
 // Generates cache busting filename hash
 const generateHash = () => crypto.createHash('md5').update(new Date().toLocaleTimeString()).digest('hex');
 
+// Floats sprite file created from webpack svg spritely, into the current build
 const writeSpriteToDisk = (compilation, filename, symbols) => compilation.assets[filename] = {
   source: () => `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width: 0; height: 0">${symbols}</svg>`,
   size: () => symbols.length
 };
-
-// Asset name helper
-const getAssetName = (assetPath) => assetPath.split('/')[assetPath.split('/').length - 1].replace(/(.*)\.(.*)/, '$1');
 
 // Source symbol cleaning helper
 const cleanSymbolContents = (contents, name, option) => {
@@ -24,24 +68,31 @@ const cleanSymbolContents = (contents, name, option) => {
 class WebpackSvgSpritely {
   constructor(options) {
     options = options || {};
-    
-    this.icons;
-    this.symbols;
+    this.ext;           // holds the file extension of our main webpack output config
+    this.entry;         // holds the record of our found entry file we inject code into
+    this.icons;         // holds a collection of our found svg files
+    this.symbols;       // holds a collection of our converted symbols from this.icons
+
+    // plugin options
     this.options = {
       xhr: (typeof options.xhr === 'undefined') ? true : options.xhr,
       prefix: (options.prefix) ? options.prefix : 'icon',
       output: (options.output) ? options.output : '',
       filename: (options.filename) ? options.filename.replace(/\[hash\]/g, generateHash()) : `spritely-${generateHash()}.svg`,
-      xhrEntry: (options.xhrEntry) ? options.xhrEntry : false
+      entry: (options.entry) ? options.entry : false
     };
 
-    this.options.xhrPath = (options.xhrPath)
-      ? `${options.xhrPath}/${this.options.filename}`
+    this.options.url = (options.url)
+      ? `${options.url}/${this.options.filename}`
       : `${this.options.output}/${this.options.filename}`;
   }
 
   apply(compiler) {
+    // At the point of emitting our bundle, lets hook into the build and perform plugin logic
     compiler.hooks.emit.tap('WebpackSvgSpritely', (compilation, callback) => {
+      // Hoist main webpack output config's file extension for logic below
+      this.ext = getExtension(compilation.compiler.options.output.filename);
+
       // Grab a collection of icons based on filters option
       this.icons = Object.keys(compilation.modules).map(j => {
         const path = compilation.modules[j].resource;
@@ -64,10 +115,10 @@ class WebpackSvgSpritely {
           // only intrested in svg assets
           if (i.indexOf('.svg') === -1) { return; }
           // only intrested in assets that equals one of our collected icons
-          if (getAssetName(i) === this.icons[k].name) { 
+          if (getAssetName(i) === this.icons[k].name) {
             // only intrested in assets that have _value
             if (!compilation.assets[i]._value) { return; }
-            
+
             // clean symbols and prefixes their names
             let contents = cleanSymbolContents(
               compilation.assets[i]._value.toString('utf8'),
@@ -86,80 +137,61 @@ class WebpackSvgSpritely {
         return collection;
       }).filter((n) => n); // removes empty records from this.icons
 
-      // gets an entry file from webpack config entry options
-      const getEntryFile = (entries) => {
-        // get first entry file from webpack config
-        let entry;
-        Object.keys(entries).map((i, key) => {
-          if (key === 0) {
-            entry = i;
-          }
-        });
-
-        // if xhrEntry option is configured, use it over our first entry from webpack config
-        return (this.options.xhrEntry) ? this.options.xhrEntry : entry;
-      };
-
       // Get a entry file
-      const entryFile = getEntryFile(compilation.compiler.options.entry);
+      this.entry = getEntryFile(compilation.chunks, compilation.compiler.options.entry, this.options.entry);
+
       // Determin if build is minified or not
       const bundleIsMinified = compilation.compiler.options.optimization.minimize;
 
       // Inject XHR request for svg sprite
       if (this.options.xhr === true) {
-        // does our complation have found entry file?
-        if (compilation.compiler.options.entry[entryFile]) {
-          // loop over entry files and update source
-          Object.keys(compilation.assets).map((i) => {
-            if (i.indexOf(entryFile) !== -1) {
-              // Build XHR source code
-              let XHRTemplate =`
-                var WP_SVG_XHR = new XMLHttpRequest();
-                WP_SVG_XHR.open(
-                  'GET',
-                  '${this.options.xhrPath}',
-                  true
-                );
+        // loop over entry files and update source
+        Object.keys(compilation.assets).map((i) => {
+          if (i === this.entry.path) {
+            // Build XHR source code
+            let XHRTemplate =`
+              var WP_SVG_XHR = new XMLHttpRequest();
+              WP_SVG_XHR.open(
+                'GET',
+                '${this.options.url}',
+                true
+              );
 
-                WP_SVG_XHR.onprogress = () => {};
-                WP_SVG_XHR.onload = () => {
-                  if (!WP_SVG_XHR.responseText || WP_SVG_XHR.responseText.substr(0, 4) !== '<svg') {
-                    throw Error('Invalid SVG Response');
-                  }
-                  if (WP_SVG_XHR.status < 200 || WP_SVG_XHR.status >= 300) {
-                    return;
-                  }
-                  var div = document.createElement('div');
-                  div.innerHTML = WP_SVG_XHR.responseText;
-                  document.body.insertBefore(div, document.body.childNodes[0]);
-                };
-                WP_SVG_XHR.send();
-              `.replace(/(\r\n|\n|\r)/gm, '')
-                .replace(/ /g, '')
-                .replace(/var/g, 'var ')
-                .replace(/new/g, 'new ')
-                .trim();
+              WP_SVG_XHR.onprogress = () => {};
+              WP_SVG_XHR.onload = () => {
+                if (!WP_SVG_XHR.responseText || WP_SVG_XHR.responseText.substr(0, 4) !== '<svg') {
+                  throw Error('Invalid SVG Response');
+                }
+                if (WP_SVG_XHR.status < 200 || WP_SVG_XHR.status >= 300) {
+                  return;
+                }
+                var div = document.createElement('div');
+                div.innerHTML = WP_SVG_XHR.responseText;
+                document.body.insertBefore(div, document.body.childNodes[0]);
+              };
+              WP_SVG_XHR.send();
+            `.replace(/(\r\n|\n|\r)/gm, '')
+              .replace(/ /g, '')
+              .replace(/var/g, 'var ')
+              .replace(/new/g, 'new ')
+              .trim();
 
-              // Determin how XHR source code should be injected based on minification settings in webpack config
-              if (bundleIsMinified) {
-                // When bundle is configured to be minified
-                compilation.assets[i]._value += XHRTemplate;
-              } else {
-                // When bundle is configured to not be minified
-                compilation.assets[i]._source.children.push(`\n\n/* WebpackSVGSpritely XHR code\nBy: Devin R. Olsen\nhttps://github.com/drolsen/webpack-svg-spritely */\n${XHRTemplate}`);
-              }             
+            // Determin how XHR source code should be injected based on minification settings in webpack config
+            if (bundleIsMinified) {
+              // When bundle is configured to be minified
+              compilation.assets[i]._value += XHRTemplate;
+            } else {
+              // When bundle is configured to not be minified
+              compilation.assets[i]._source.children.push(`\n\n/* WebpackSVGSpritely XHR code\nBy: Devin R. Olsen\nhttps://github.com/drolsen/webpack-svg-spritely */\n${XHRTemplate}`);
             }
-          });
-        } else {
-          // Terminal warming about no entry file was found (note: this won't prevent sprite from being written to disk)
-          console.warn('\x1b[33mWebpack SVG Spritely has been configured with an unknown custom xhrEntry value.\nXHR code can\'t be injected into an unknown entry files.\nPlease make sure to specify the key name of entry file, not path or filename.*\x1b[37m');
-        }
+          }
+        });
       }
 
       // Inject svg sprite contents into bundle as module
       if (this.options.xhr === false){
         Object.keys(compilation.assets).map((i) => {
-          if (i.indexOf(entryFile) !== -1) {
+          if (i === this.entry.path) {
             let ModuleTemplate = `var div = document.createElement('div');\ndiv.innerHTML = \`<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width: 0; height: 0">${this.symbols.join('')}</svg>\`;\ndocument.body.insertBefore(div, document.body.childNodes[0]);`;
 
             // Determin how sprite source should be injected based on minification settings in webpack config
@@ -169,7 +201,7 @@ class WebpackSvgSpritely {
             } else {
               // When bundle is configured to not be minified
               compilation.assets[i]._source.children.push(`\n\n/* WebpackSVGSpritely XHR code\nBy: Devin R. Olsen\nhttps://github.com/drolsen/webpack-svg-spritely */\n${ModuleTemplate}`);
-            }             
+            }
           }
         });
       }
@@ -183,7 +215,7 @@ class WebpackSvgSpritely {
           compilation,
           `${this.options.output}/${this.options.filename}`,
           this.symbols
-        );        
+        );
       }
     });
   }

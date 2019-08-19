@@ -10,7 +10,7 @@ const config = {
   },
   output: {
     path: path.resolve(__dirname, '../dist'), 
-    filename: `../dist/[name].js`,
+    filename: '../dist/entry/[name].js',
     pathinfo: false
   },
   module: {
@@ -21,7 +21,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': `../dist/images/` // see package.json
+            'outputPath': '../dist/entry/images/' // see package.json
           }
         }
       ]
@@ -35,9 +35,8 @@ const config = {
 // Prod vs. Dev config customizing
 module.exports = (env, argv) => {
   config.plugins = [
-    new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
-      output: `images/`,
+      output: 'entry/images/',
       xhrEntry: 'testB'
     })
   ];
