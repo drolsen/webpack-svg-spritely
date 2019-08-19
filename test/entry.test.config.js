@@ -37,7 +37,7 @@ module.exports = (env, argv) => {
   config.plugins = [
     new WebpackSVGSpritely({
       output: 'entry/images/',
-      xhrEntry: 'testB'
+      entry: 'testB'
     })
   ];
   return config;
