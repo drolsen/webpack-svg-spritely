@@ -1,34 +1,42 @@
 {
-	"name": "webpack-svg-spritely",
-	"version": "1.1.4",
-	"description": "Plugin that bundles project SVG files into a SVG sprite",
-	"repository": "drolsen/webpack-svg-spritely",
-	"bugs": {
-		"url": "https://github.com/drolsen/webpack-svg-spritely/issues"
-	},
-	"author": "Devin R. Olsen <devin@devinrolsen.com> (http://devinrolsen.com)",
-	"license": "MIT",
-	"scripts": {
-		"test": "npm run basic-test && npm run entry-test && npm run filename-test && npm run path-test && npm run inject-xhr-test && npm run inject-sprite-test && npm run inject-nothing-test && npm run minification-test",
-		"basic-test": "webpack --config ./test/basic.test.config.js --mode production",
-		"entry-test": "webpack --config ./test/entry.test.config.js --mode production",
-		"filename-test": "webpack --config ./test/filename.test.config.js --mode production",
-		"path-test": "webpack --config ./test/path.test.config.js --mode production",
-		"inject-xhr-test": "webpack --config ./test/inject.xhr.test.config.js --mode production",
-		"inject-sprite-test": "webpack --config ./test/inject.sprite.test.config.js --mode production",
-		"inject-nothing-test": "webpack --config ./test/inject.nothing.test.config.js --mode production",
-		"minification-test": "webpack --config ./test/minified.test.config.js --mode production"
-	},
-	"engines": {
-		"node": ">=10.15.1"
-	},
-	"devDependencies": {
-		"clean-webpack-plugin": "^3.0.0",
-		"file-loader": "^4.2.0",
-		"webpack": "^4.39.2",
-		"webpack-cli": "^3.3.7"
-	},
-	"dependencies": {
-		"webpack-inject-plugin": "^1.5.3"
-	}
+  "name": "webpack-svg-spritely",
+  "keywords": [
+    "webpack",
+    "svg",
+    "sprite",
+    "webpack svg",
+    "webpack svg sprite",
+    "webpack svg sprite plugin"
+  ],
+  "version": "1.1.5",
+  "description": "Plugin that bundles project SVG files into a SVG sprite",
+  "repository": "drolsen/webpack-svg-spritely",
+  "bugs": {
+    "url": "https://github.com/drolsen/webpack-svg-spritely/issues"
+  },
+  "author": "Devin R. Olsen <devin@devinrolsen.com> (http://devinrolsen.com)",
+  "license": "MIT",
+  "scripts": {
+    "test": "npm run basic-test && npm run entry-test && npm run filename-test && npm run path-test && npm run inject-xhr-test && npm run inject-sprite-test && npm run inject-nothing-test && npm run minification-test",
+    "basic-test": "webpack --config ./test/basic.test.config.js --mode production",
+    "entry-test": "webpack --config ./test/entry.test.config.js --mode production",
+    "filename-test": "webpack --config ./test/filename.test.config.js --mode production",
+    "path-test": "webpack --config ./test/path.test.config.js --mode production",
+    "inject-xhr-test": "webpack --config ./test/inject.xhr.test.config.js --mode production",
+    "inject-sprite-test": "webpack --config ./test/inject.sprite.test.config.js --mode production",
+    "inject-nothing-test": "webpack --config ./test/inject.nothing.test.config.js --mode production",
+    "minification-test": "webpack --config ./test/minified.test.config.js --mode production"
+  },
+  "engines": {
+    "node": ">=10.15.1"
+  },
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "file-loader": "^4.2.0",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7"
+  },
+  "dependencies": {
+    "webpack-inject-plugin": "^1.5.3"
+  }
 }
