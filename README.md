@@ -8,9 +8,10 @@
 </div>
 
 ### How it works
-Webpack SVG Spritely takes all incoming SVG files of a given build entry and creates symbols out of each found file. Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk of all SVG symbols.
+Webpack SVG Spritely takes all incoming SVG files of a given build and creates symbols out one.
+Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk.
 
-Once ran in browser, your newly created SVG sprite file is loaded into the DOM from disk and document is ready for sprite usage.
+Once ran in browser, the newly created SVG sprite file is loaded into the DOM and ready usage.
 
 It's that simple!
 
@@ -53,7 +54,7 @@ To reference SVG sprite parts in DOM, use the `xlinkHref` within a SVG tag:
 - `icon-` prefix of the xlinkHref is default of Webpack SVG Spritely but can be customized with the `prefix` option below.
 
 ### Plugin Requirements
-The only requirement Webpack SVG Spritely has, is that you are passing SVG's through your build system, not just coping them from one location to another by means of copy-webpack-plugin.
+The only requirement Webpack SVG Spritely has, is that you are passing SVG's through your build system, not just coping them from one location to another by means of [CopyWebpackPlugin](https://www.npmjs.com/package/copy-webpack-plugin).
 
 Include all SVG files into your Webpack entry file(s):
 ```js
@@ -85,7 +86,7 @@ Option | Types | Description | Default
 `prefix` | String | Prefix used in the sprite file symbol's name | icon-
 `entry` | String | Defines what entry file to inject XHR code or sprite contents into. | First entry file of Webpack configuration's entry settings
 `xhr` | True, False, 'Other' | Defines if XHR code, Sprite source or nothing gets injected into entry file. | true
-`url` | String | Defines the path of where XHR code should request for icon sprite file. | Webpack configured output location + plugin output directory.
+`url` | String | Overloads the default path of where XHR code should request for icon sprite file. | Webpack configured output location + plugin output directory.
 
 ## options.output
 With the `output` option, you can specify a deeper location (relative to the Webpack's `output` configuration) to where this plugin should write the sprite file under.
@@ -220,7 +221,8 @@ If you would like to change a test, update the root package.json file's `test` s
 - `filename.test.config.js` = Should produce a sprite file with custom name and use MD5 cache popping [hash] flag.
 - `path.test.config.js` = Should set custom XHR endpoint path within the injected XHR code.
 - `inject.nothing.test.config.js` = Should inject nothing into entry file, but write sprite file to disk still.
-- `inject.xhr.test.config.js` = Should inject xhr code into entry file and write sprite to disk.
-- `inject.sprite.test.config.js` = Should inject sprite code instead of xhr code into entry file and write sprite to disk.
+- `inject.xhr.test.config.js` = Should inject XHR code into entry file and write sprite to disk.
+- `inject.sprite.test.config.js` = Should inject sprite code instead of XHR code into entry file and write sprite to disk.
+- `minified.sprite.test.config.js` = Should produce a out of the box sprite file and inject XHR code into minified bundled entry file.
 
 `test.a.js` and `test.b.js` files are our test supporting entry files, not test configurations. Both these files are requiring our test svg files which is a requirement of Webpack SVG Spritely.

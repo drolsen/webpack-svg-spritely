@@ -6,8 +6,8 @@ const path = require('path');
 const config = {
   entry: path.resolve(__dirname, 'test.a.js'),
   output: {
-    path: path.resolve(__dirname, '../dist'), 
-    filename: '../dist/basic/[name].js',
+    path: path.resolve(__dirname, '../dist/basic'), 
+    filename: '../basic/[name].js',
     pathinfo: false
   },
   module: {
@@ -18,7 +18,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../dist/basic/images/' // see package.json
+            'outputPath': '../basic/images/' // see package.json
           }
         }
       ]
@@ -34,7 +34,7 @@ module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
-      output: 'basic/images/'
+      output: '/images'
     })
   ];
   return config;
