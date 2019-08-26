@@ -26,6 +26,7 @@ yarn add --dev webpack-svg-spritely
 
 ### Webpack Config
 Import webpack-svg-spritely into your Webpack configuration file:
+
 ```js
 const WebpackSVGSpritely = require('webpack-svg-spritely');
 ```
