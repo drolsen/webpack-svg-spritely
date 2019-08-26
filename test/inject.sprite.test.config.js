@@ -8,8 +8,8 @@ const config = {
     testA: path.resolve(__dirname, 'test.a.js')
   },
   output: {
-    path: path.resolve(__dirname, '../dist'), 
-    filename: '../dist/sprite-inject/[name].js',
+    path: path.resolve(__dirname, '../dist/sprite-inject'), 
+    filename: '../sprite-inject/[name].js',
     pathinfo: false
   },
   module: {
@@ -20,7 +20,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../dist/sprite-inject/images/' // see package.json
+            'outputPath': '../sprite-inject/images/' // see package.json
           }
         }
       ]
@@ -34,8 +34,9 @@ const config = {
 // Prod vs. Dev config customizing
 module.exports = (env, argv) => {
   config.plugins = [
+    new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
-      output: 'sprite-inject/images/',
+      output: '/images',
       xhr: false
     })
   ];

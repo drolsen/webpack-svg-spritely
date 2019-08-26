@@ -8,8 +8,8 @@ const config = {
     testA: path.resolve(__dirname, 'test.a.js')
   },
   output: {
-    path: path.resolve(__dirname, '../dist'), 
-    filename: '../dist/xhr-inject/[name].js',
+    path: path.resolve(__dirname, '../dist/xhr-inject'), 
+    filename: '../xhr-inject/[name].js',
     pathinfo: false
   },
   module: {
@@ -20,7 +20,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../dist/xhr-inject/images/' // see package.json
+            'outputPath': '../xhr-inject/images/' // see package.json
           }
         }
       ]
@@ -34,8 +34,9 @@ const config = {
 // Prod vs. Dev config customizing
 module.exports = (env, argv) => {
   config.plugins = [
+    new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
-      output: 'xhr-inject/images/',
+      output: '/images',
       xhr: true
     })
   ];

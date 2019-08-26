@@ -4,12 +4,10 @@ const path = require('path');
 
 // test webpack config
 const config = {
-  entry: {
-    testA: path.resolve(__dirname, 'test.a.js')
-  },
+  entry: path.resolve(__dirname, 'test.a.js'),
   output: {
-    path: path.resolve(__dirname, '../dist/no-inject'), 
-    filename: '../no-inject/[name].js',
+    path: path.resolve(__dirname, '../dist/minification'), 
+    filename: '../minification/[name].js',
     pathinfo: false
   },
   module: {
@@ -20,14 +18,14 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../no-inject/images/' // see package.json
+            'outputPath': '../minification/images/' // see package.json
           }
         }
       ]
     }]
   },
   optimization: {
-    minimize: false
+    minimize: true
   } 
 };
 
@@ -36,8 +34,7 @@ module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
-      output: '/images',
-      xhr: 'other'
+      output: '/images'
     })
   ];
   return config;
