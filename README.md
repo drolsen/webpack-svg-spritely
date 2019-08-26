@@ -223,6 +223,6 @@ If you would like to change a test, update the root package.json file's `test` s
 - `inject.nothing.test.config.js` = Should inject nothing into entry file, but write sprite file to disk still.
 - `inject.xhr.test.config.js` = Should inject XHR code into entry file and write sprite to disk.
 - `inject.sprite.test.config.js` = Should inject sprite code instead of XHR code into entry file and write sprite to disk.
-- `minified.sprite.test.config.js` = Should produce a out of the box sprite file and inject XHR code into minified bundled entry file.
+- `minified.test.config.js` = Should produce a out of the box sprite file and inject XHR code into minified bundled entry file.
 
 `test.a.js` and `test.b.js` files are our test supporting entry files, not test configurations. Both these files are requiring our test svg files which is a requirement of Webpack SVG Spritely.
