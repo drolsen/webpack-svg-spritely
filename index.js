@@ -93,10 +93,8 @@ class WebpackSvgSpritely {
       // SECOND PASS (injects XHR or Symtols into entry js)
       if (this.passes === 1) {
         compilation.hooks.optimizeModules.tap('WebpackSvgSpritely', (modules) => {
-          
-
           Object.keys(modules).map((i) => {
-            if (modules[i].resource === getEntryFilePath(compiler.options.entry, this.options.entry)) {
+            if (modules[i].rawRequest === getEntryFilePath(compiler.options.entry, this.options.entry)) {
               let template;
 
               // Inject XHR request
