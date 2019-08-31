@@ -56,8 +56,8 @@ module.exports = {
 
 Option | Types | Description | Default
 --- | --- | --- | ---
-`filename` | String | Name of the sprite file that gets written to disk. | iconset-[hash].svg
 `output` | String | Location of where sprite file gets written to disk. | Relative to Webpack build's output.
+`filename` | String | Name of the sprite file that gets written to disk. | iconset-[hash].svg
 `prefix` | String | Prefix used in the sprite file symbol's name | `icon-`
 `insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
 `url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
@@ -109,6 +109,13 @@ which effect sprite usage:
 ## options.insert
 The insert option allows you to define how sprite symbols gets inserted into the DOM for sprite usage when ran in browsers.
 
+
+```js
+new WebpackSVGSpritely({
+  insert: 'xhr | bundle | document | none'
+})
+```
+
 ### xhr (default)
 XHR code snip get inserted into your build's entry file(s). The XHR option will fire off a request (at page load) to a sprite file that gets written to disk and loads symbols into DOM. This is to help to reduce your entry bundled size by offloading sprite source to a file on disk, but does not work offline.
 
@@ -124,11 +131,6 @@ Because this option reaches into the build's HTML asset output, it works with bo
 When working with larger backend systems (Java or .Net) that inserts sprite symbols into documents, use the none option.
 This will still write a sprite file to disk for backend, but bypass any code from being inserted into client side documents.
 
-```js
-new WebpackSVGSpritely({
-  xhr: false (default true)
-})
-```
 
 ## options.url
 If you choose to set the `insert.xhr` option, the default request location for sprite file will be `output location + filename`. If you wish to overload this default file endpoint you can do so with this option.
