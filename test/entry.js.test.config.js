@@ -1,16 +1,17 @@
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WebpackSVGSpritely = require('../index.js');
 const path = require('path');
 
 // test webpack config
 const config = {
   entry: {
-    testA: path.resolve(__dirname, 'test.a.js')
+    testA: path.resolve(__dirname, 'test.a.js'),
+    testB: path.resolve(__dirname, 'test.b.js')
   },
   output: {
-    path: path.resolve(__dirname, '../dist/no-inject'), 
-    filename: '../no-inject/[name].js',
-    pathinfo: false
+    path: path.resolve(__dirname, '../dist/entry-js'), 
+    filename: '../entry-js/[name].js'
   },
   module: {
     rules: [{
@@ -20,7 +21,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../no-inject/images/' // see package.json
+            'outputPath': '../entry-js/images/' // see package.json
           }
         }
       ]
@@ -35,9 +36,14 @@ const config = {
 module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
+    new CopyWebpackPlugin([
+      { from: 'test/test.a.html' },
+      { from: 'test/test.b.html' }
+    ]),    
     new WebpackSVGSpritely({
       output: '/images',
-      xhr: 'other'
+      insert: 'xhr', // is default
+      entry: 'testB'
     })
   ];
   return config;

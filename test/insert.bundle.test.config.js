@@ -1,15 +1,17 @@
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
 const WebpackSVGSpritely = require('../index.js');
 const path = require('path');
 
 // test webpack config
 const config = {
   entry: {
-    testA: path.resolve(__dirname, 'test.a.js')
+    testA: path.resolve(__dirname, 'test.a.js'),
+    testB: path.resolve(__dirname, 'test.b.js')
   },
   output: {
-    path: path.resolve(__dirname, '../dist/path'), 
-    filename: '../path/[name].js'
+    path: path.resolve(__dirname, '../dist/insert-bundle'), 
+    filename: '../insert-bundle/[name].js'
   },
   module: {
     rules: [{
@@ -19,7 +21,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../path/images/' // see package.json
+            'outputPath': '../insert-bundle/images/' // see package.json
           }
         }
       ]
@@ -34,9 +36,17 @@ const config = {
 module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
+    new HtmlWebPackPlugin({
+      'template': './test/test.a.html',
+      'filename': './index.a.html',
+    }),
+    new HtmlWebPackPlugin({
+      'template': './test/test.b.html',
+      'filename': './index.b.html',
+    }),    
     new WebpackSVGSpritely({
       output: '/images',
-      url: '/~/custom/path/to/svg'
+      insert: 'bundle'
     })
   ];
   return config;

@@ -9,9 +9,9 @@
 
 ### How it works
 Webpack SVG Spritely takes all incoming SVG files of a given build and creates symbols out of them.
-Once done creating symbols, Webpack SVG Spritely writes a SVG sprite file to disk.
+Taking the created symbols, Webpack SVG Spritely then writes an SVG sprite file to disk or document(s).
 
-Once ran in browser, the newly created SVG sprite file is loaded into the DOM and ready for usage.
+Once ran in browser, the newly created SVG sprite is loaded into DOM and ready for usage.
 
 It's that simple!
 
@@ -25,13 +25,13 @@ yarn add --dev webpack-svg-spritely
 ```
 
 ### Webpack Config
-Import webpack-svg-spritely into your Webpack configuration file:
+Import `webpack-svg-spritely` into your Webpack configuration file:
 
 ```js
 const WebpackSVGSpritely = require('webpack-svg-spritely');
 ```
 
-Instantiate a new WebpackSVGSpritely() class within Webpack configuration's plugin array:
+Instantiate new `WebpackSVGSpritely(...)` class within Webpack's plugin configuration array:
 ```js
 module.exports = {
   "plugins": [
@@ -40,7 +40,152 @@ module.exports = {
 };
 ```
 
-Thats it!
+---
+
+## Options
+
+```js
+module.exports = {
+  "plugins": [
+    new WebpackSVGSpritely({
+      ...options...
+    })
+  ]
+};
+```
+
+Option | Types | Description | Default
+--- | --- | --- | ---
+`filename` | String | Name of the sprite file that gets written to disk. | iconset-[hash].svg
+`output` | String | Location of where sprite file gets written to disk. | Relative to Webpack build's output.
+`prefix` | String | Prefix used in the sprite file symbol's name | `icon-`
+`insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
+`url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
+`entry` | String | Allows you to define what entry file or html document to insert code into. | First entry or all documents
+
+## options.output
+With the `output` option, you can specify a deeper location to where this plugin should write the sprite file under.
+Without this option, the sprite file will be written to the root of your Webpack configuration's output location.
+
+```js
+new WebpackSVGSpritely({
+  output: '/custom/location/images'
+})
+```
+
+## optins.filename
+This option allows you to specify a custom name for the sprite file.
+You can use a `[hash]` flag to combine a MD5 cache pop hash to filenames.
+
+Please note: if you using a [hash] flag within `filename` you are subjected to unique hash numbers per build. Consider removing `[hash]` flag, if you have logic beyond this plugin that needs a consistent sprite filename when written to disk.
+
+```js
+new WebpackSVGSpritely({
+  filename: 'custom-svg-sprite-[hash].svg'
+})
+```
+
+## options.prefix
+The `prefix` option allows you to change a symbol's id prefix from `icon-` to something custom. 
+For example, if you have SVG files named `up.svg` and `down.svg`, by default both `up.svg` and `down.svg` sprited ids are `icon-up` and `icon-down` respectively.
+
+```js
+new WebpackSVGSpritely({
+  prefix: 'projectName'
+})
+```
+
+which effect sprite usage:
+```xml
+<svg>
+  <use xlinkHref="#projectName-up" />
+</svg>
+
+<svg>
+  <use xlinkHref="#projectName-down" />
+</svg>
+```
+
+## options.insert
+The insert option allows you to define how sprite symbols gets inserted into the DOM for sprite usage when ran in browsers.
+
+### xhr (default)
+XHR code snip get inserted into your build's entry file(s). The XHR option will fire off a request (at page load) to a sprite file that gets written to disk and loads symbols into DOM. This is to help to reduce your entry bundled size by offloading sprite source to a file on disk, but does not work offline.
+
+### bundle
+If you wish to not write sprite to disk / XHR option, you can bundle sprite symbols directly into your build's entry file(s) instead. This can increase your bundled size pretty quickly, but does ensure svg sprite works offline.
+
+### document
+If you have HTML assets in your build's ouput, you can insert the sprite symbols into these HTML document(s). This bypasses any need for you to insert code into any entry or html files, or the needed for a sprite file to be written to disk.
+
+Because this option reaches into the build's HTML asset output, it works with both [HTMLWebpackPlugin](https://www.npmjs.com/package/html-webpack-plugin) and [CopyWebpackPlugin](https://www.npmjs.com/package/copy-webpack-plugin) configuration.
+
+### none
+When working with larger backend systems (Java or .Net) that inserts sprite symbols into documents, use the none option.
+This will still write a sprite file to disk for backend, but bypass any code from being inserted into client side documents.
+
+```js
+new WebpackSVGSpritely({
+  xhr: false (default true)
+})
+```
+
+## options.url
+If you choose to set the `insert.xhr` option, the default request location for sprite file will be `output location + filename`. If you wish to overload this default file endpoint you can do so with this option.
+
+```js
+new WebpackSVGSpritely({
+  url: '/~/custom/production/path'
+})
+```
+
+## options.entry
+If you would like to specify a specific file to insert code into (when using multiple entry files or html document), this `entry` option will allow you to do just that. By default, without specifying an entry file, code can be inserted into first found entry or all html documents.
+
+If you use the `insert.xhr` or `insert.bundle`, this option pertains to entry files:
+```js
+module.exports = {
+  "entry": {
+    testA: 'test.a.js',
+    testB: 'test.b.js'
+  },
+  output: {
+    filename: '../dist/basic/[name].js'
+  },
+  "plugins": [
+    new WebpackSVGSpritely({
+      insert: 'xhr or bundle',
+      entry: 'testB'
+    })
+  ]
+};
+```
+
+If using `insert.document` instead, this option pertains to html documents. 
+```js
+module.exports = {
+  "entry": {
+    testA: 'test.a.js',
+    testB: 'test.b.js'
+  },
+  output: {
+    filename: '../dist/basic/custom-[name].js'
+  },
+  "plugins": [
+    // used to compile our html files
+    new HtmlWebPackPlugin({
+      'template': './src/index.html',
+      'filename': './documents/[name].html',
+    }),
+    new WebpackSVGSpritely({
+      insert: 'document',
+      entry: 'index.html'
+    })
+  ]
+};
+```
+
+---
 
 ### Using Sprite Parts
 To reference SVG sprite parts in DOM, use the `xlinkHref` within a SVG tag:
@@ -65,146 +210,6 @@ require.context('src/project/images/', false, /\.(svg)$/);
 If you have not already configured your Webpack to handle media files, have a look see at the Webpack SVG Spritely test configuration [here](https://github.com/drolsen/webpack-svg-spritely/blob/master/test/basic.test.config.js#L16-L27) to see how to use `file-loader` module. This must be setup prior to importing your source SVG files into your bundle(s).
 
 For any questions around Webpack image configuration, please first review [repository test files](https://github.com/drolsen/webpack-svg-spritely/tree/master/test) before opening an issue.
-
----
-
-## Options
-
-```js
-module.exports = {
-  "plugins": [
-    new WebpackSVGSpritely({
-      ...options...
-    })
-  ]
-};
-```
-
-Option | Types | Description | Default
---- | --- | --- | ---
-`filename` | String | Name of the sprite file. | iconset-[hash].svg
-`output` | String | Location of where sprite file gets output. | Webpack configured output location.
-`prefix` | String | Prefix used in the sprite file symbol's name | icon-
-`entry` | String | Defines what entry file to inject XHR code or sprite contents into. | First entry file of Webpack configuration's entry settings
-`xhr` | True, False, 'Other' | Defines if XHR code, Sprite source or nothing gets injected into entry file. | true
-`url` | String | Overloads the default path of where XHR code should request for icon sprite file. | Webpack configured output location + plugin output directory.
-
-## options.output
-With the `output` option, you can specify a deeper location (relative to the Webpack's `output` configuration) to where this plugin should write the sprite file under.
-
-Without this option, the sprite file will be written to the root of your Webpack configuration's output location.
-
-```js
-new WebpackSVGSpritely({
-  output: '/custom/location/images'
-})
-```
-
-## optins.filename
-This option allows you to specify a name for the sprite file.
-You can use a `[hash]` flag to combine a cache pop MD5 hash to filename and XHR endpoint (if XHR is enabled of course).
-
-Please note; if you using a [hash] flag within `filename` you are subjected to unique hash numbers per build. Consider removing `[hash]` flag, if you have logic beyond this plugin that needs a consistent sprite file name out on disk.
-
-```js
-new WebpackSVGSpritely({
-  filename: 'customName-[hash].svg'
-})
-```
-or with out `[hash]` flag
-```js
-new WebpackSVGSpritely({
-  filename: 'customName.svg'
-})
-```
-
-## options.prefix
-The `prefix` option allows you to change the symbol id prefix from `icon-` to something custom. 
-For example; if you have SVG files named `up.svg` and `down.svg` being bundled into a SVG sprite. By default both `up.svg` and `down.svg` sprited ids are `icon-up` and `icon-down` respectively.
-
-Prefixes are enforced; if you specify a blank string, the name will be `-up` and `-down` which is ugly..
-Use prefixes!
-
-```js
-new WebpackSVGSpritely({
-  prefix: 'myPrefix' // becomes <symbol name="SVGSprite-filename">
-})
-```
-which effect sprite usage:
-```xml
-<svg>
-  <use xlinkHref="#myPrefix-up" />
-</svg>
-
-<svg>
-  <use xlinkHref="#myPrefix-down" />
-</svg>
-```
-
-## options.xhr
-By default Webpack SVG Spritely will inject code used to request sprite file contents into DOM by means of XHR. This is to help reduce your bundle size to offloading sprite source to a svg file on disk.
-
-However, you can also bypass this XHR approach by setting the `xhr` option to false. Setting this option to false will not write a sprite file to disk; instead the sprite contents will be injected directly into your bundle.
-
-If you wish to have no XHR, or sprite source be injected to bundles at all (but still want sprite written to disk), set this option to `'other'`. 
-(This is useful if you want to use a server-side approach to inject the sprite contents into DOM instead.)
-
-```js
-new WebpackSVGSpritely({
-  xhr: false (default true)
-})
-```
-
-## options.url
-If you choose to use the `xhr` option from above, the default request location will be `output location + filename`. However, if you want to overload this default XHR endpoint you can do so with this `url` option.
-
-```js
-new WebpackSVGSpritely({
-  url: '/~/custom/production/path'
-})
-```
-
-## options.entry
-XHR code or sprite contents will be injected into your first found entry .js file for a given build automatically.
-If you would like to specify a which entry file to inject code into, this `entry` option will allow you to do just that.
-
-This is useful if Webpack has been configured with multiple entry points (code splitting).
-Please take note on how `output.filename` (example #2 down below) changes the configuration of this `entry` option usage.
-
-```js
-module.exports = {
-  "entry": {
-    testA: 'test.a.js',
-    testB: 'test.b.js'
-  },
-  output: {
-    filename: '../dist/basic/[name].js'
-  },
-  "plugins": [
-    new WebpackSVGSpritely({
-      entry: 'testB' // or testB.js
-    })
-  ]
-};
-```
-
-```js
-module.exports = {
-  "entry": {
-    testA: 'test.a.js',
-    testB: 'test.b.js'
-  },
-  output: {
-    filename: '../dist/basic/custom-[name].js'
-  },
-  "plugins": [
-    new WebpackSVGSpritely({
-      entry: 'custom-testB'
-    })
-  ]
-};
-```
-
 
 ---
 
