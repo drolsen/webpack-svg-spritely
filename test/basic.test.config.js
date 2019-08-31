@@ -7,8 +7,7 @@ const config = {
   entry: path.resolve(__dirname, 'test.a.js'),
   output: {
     path: path.resolve(__dirname, '../dist/basic'), 
-    filename: '../basic/[name].js',
-    pathinfo: false
+    filename: '../basic/[name].js'
   },
   module: {
     rules: [{

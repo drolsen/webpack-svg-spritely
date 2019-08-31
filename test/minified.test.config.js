@@ -4,11 +4,12 @@ const path = require('path');
 
 // test webpack config
 const config = {
-  entry: path.resolve(__dirname, 'test.a.js'),
+  entry: {
+    testA: path.resolve(__dirname, 'test.a.js')
+  },
   output: {
     path: path.resolve(__dirname, '../dist/minification'), 
-    filename: '../minification/[name].js',
-    pathinfo: false
+    filename: '../minification/[name].js'
   },
   module: {
     rules: [{
@@ -23,9 +24,6 @@ const config = {
         }
       ]
     }]
-  },
-  optimization: {
-    minimize: true
   } 
 };
 
@@ -34,7 +32,8 @@ module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
-      output: '/images'
+      output: '/images',
+      insert: 'xhr'
     })
   ];
   return config;
