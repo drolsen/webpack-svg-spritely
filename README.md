@@ -9,7 +9,7 @@
 
 ### How it works
 Webpack SVG Spritely takes all incoming SVG files of a given build and creates symbols out of them.
-Taking the created symbols, Webpack SVG Spritely then writes a SVG sprite file to disk or document(s).
+Taking the created symbols, Webpack SVG Spritely then writes an SVG sprite file to disk or document(s).
 
 Once ran in browser, the newly created SVG sprite is loaded into DOM and ready for usage.
 
