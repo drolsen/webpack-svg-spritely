@@ -19,7 +19,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../filename/images/' // see package.json
+            'outputPath': '../filename/images/'
           }
         }
       ]
@@ -30,7 +30,6 @@ const config = {
   } 
 };
 
-// Prod vs. Dev config customizing
 module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),

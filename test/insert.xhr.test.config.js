@@ -3,7 +3,6 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 const WebpackSVGSpritely = require('../index.js');
 const path = require('path');
 
-// test webpack config
 const config = {
   entry: {
     testA: path.resolve(__dirname, 'test.a.js'),
@@ -21,7 +20,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../insert-xhr/images/' // see package.json
+            'outputPath': '../insert-xhr/images/'
           }
         }
       ]
@@ -32,7 +31,6 @@ const config = {
   } 
 };
 
-// Prod vs. Dev config customizing
 module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
