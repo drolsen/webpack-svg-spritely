@@ -54,6 +54,7 @@ const getEntryFilePath = (entries, entry) => {
 class WebpackSvgSpritely {
   constructor(options) {
     options = options || {};
+    this.noDuplicates = [];  // used within duplicate symbol prevention
     this.symbols = [];       // holds a collection of our converted symbols from svg assets
     this.entryPath;
 
@@ -79,21 +80,21 @@ class WebpackSvgSpritely {
     compiler.hooks.compilation.tap('WebpackSvgSpritely', (compilation) => {
       // Grabbing SVG source at the most earliest point possible to create `this.symbols` with.
       compilation.hooks.moduleAsset.tap('WebpackSvgSpritely', (module, filename) => {
-        if (filename.indexOf('.svg') !== -1) {
-          const asset = module.buildInfo.assets;
-          this.symbols.push(
-            Object.keys(asset).map((i) => {
-              if (this.symbols.join('').indexOf(`${this.options.prefix}-${getAssetName(filename)}`) === -1) {
-                return cleanSymbolContents(
-                  asset[i]._value.toString('utf8'),
-                  getAssetName(filename),
-                  this.options.prefix
-                )
-              }
-              return false;
-            }).filter((n) => n)
-          );
-        }
+        if (filename.indexOf('.svg') === -1) { return false; }              // svg files only please
+        if (this.noDuplicates.indexOf(filename) !== -1) { return false; }   // prevent duplicates step 1
+        this.noDuplicates.push(filename);                                   // prevent duplicates step 2
+
+        const asset = module.buildInfo.assets;
+        this.symbols.push(
+          Object.keys(asset).map((i) => {
+            return cleanSymbolContents(
+              asset[i]._value.toString('utf8'),
+              getAssetName(filename),
+              this.options.prefix
+            );
+            return false;
+          }).filter((n) => n)
+        );
       });
 
       // Adds a [flag] hook for potential code inject during emit tap below
