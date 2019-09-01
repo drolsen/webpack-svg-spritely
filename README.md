@@ -123,7 +123,7 @@ XHR code snip get inserted into your build's entry file(s). The XHR option will 
 If you wish to not write sprite to disk / XHR option, you can bundle sprite symbols directly into your build's entry file(s) instead. This can increase your bundled size pretty quickly, but does ensure svg sprite works offline.
 
 ### document
-If you have HTML assets in your build's ouput, you can insert the sprite symbols into these HTML document(s). This bypasses any need for you to insert code into any entry or html files, or the needed for a sprite file to be written to disk.
+If you have HTML assets in your build's ouput, you can insert the sprite symbols into these HTML document(s). This bypasses any need for you to insert code into any entry, and the needed for a sprite file to be written to disk.
 
 Because this option reaches into the build's HTML asset output, it works with both [HTMLWebpackPlugin](https://www.npmjs.com/package/html-webpack-plugin) and [CopyWebpackPlugin](https://www.npmjs.com/package/copy-webpack-plugin) configuration.
 
