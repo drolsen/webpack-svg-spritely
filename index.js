@@ -81,20 +81,21 @@ class WebpackSvgSpritely {
       // Grabbing SVG source at the most earliest point possible to create `this.symbols` with.
       compilation.hooks.moduleAsset.tap('WebpackSvgSpritely', (module, filename) => {
         if (filename.indexOf('.svg') === -1) { return false; }              // svg files only please
-        if (this.noDuplicates.indexOf(filename) !== -1) { return false; }   // prevent duplicates step 1
-        this.noDuplicates.push(filename);                                   // prevent duplicates step 2
-
         const asset = module.buildInfo.assets;
-        this.symbols.push(
-          Object.keys(asset).map((i) => {
-            return cleanSymbolContents(
-              asset[i]._value.toString('utf8'),
-              getAssetName(filename),
-              this.options.prefix
+
+        Object.keys(asset).map((i) => {
+          if (this.noDuplicates.indexOf(i) === -1) {
+            this.symbols.push(
+              cleanSymbolContents(
+                asset[i]._value.toString('utf8'),
+                getAssetName(i),
+                this.options.prefix
+              )
             );
-            return false;
-          }).filter((n) => n)
-        );
+
+            this.noDuplicates.push(i);
+          }
+        });
       });
 
       // Adds a [flag] hook for potential code inject during emit tap below
@@ -181,12 +182,12 @@ class WebpackSvgSpritely {
 
             if (this.options.entry) {
               if (i.indexOf(this.options.entry) !== -1) {
-                compilation.assets[i].source = () => Buffer.from(HTML, 'utf8');        
+                compilation.assets[i].source = () => Buffer.from(HTML, 'utf8');
               }
             } else {
-              compilation.assets[i].source = () => Buffer.from(HTML, 'utf8'); 
+              compilation.assets[i].source = () => Buffer.from(HTML, 'utf8');
             }
-          }          
+          }
         });
       }
     });
