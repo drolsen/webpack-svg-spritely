@@ -110,8 +110,7 @@ class WebpackSvgSpritely {
                 var WP_SVG_XHR = new XMLHttpRequest();
                 WP_SVG_XHR.open('GET', '${this.options.url}', true);
 
-                WP_SVG_XHR.onprogress = () => {};
-                WP_SVG_XHR.onload = () => {
+                WP_SVG_XHR.onload = function() {
                   if (!WP_SVG_XHR.responseText || WP_SVG_XHR.responseText.substr(0, 4) !== '<svg') {
                     throw Error('Invalid SVG Response');
                   }
