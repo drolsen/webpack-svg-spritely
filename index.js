@@ -84,16 +84,25 @@ class WebpackSvgSpritely {
         const asset = module.buildInfo.assets;
 
         Object.keys(asset).map((i) => {
-          if (this.noDuplicates.indexOf(i) === -1) {
-            this.symbols.push(
-              cleanSymbolContents(
-                asset[i]._value.toString('utf8'),
-                getAssetName(i),
-                this.options.prefix
-              )
-            );
+          const contents = asset[i]._value.toString('utf8');
+          // no files missing <svg tag
+          // no files that are font svg files
+          if (contents.indexOf('<svg') !== -1
+            && contents.indexOf('<font') === -1
+            && contents.indexOf('<font') === -1
+            && contents.indexOf('<glyph') === -1
+          ) {
+            if (this.noDuplicates.indexOf(i) === -1) {
+              this.symbols.push(
+                cleanSymbolContents(
+                  contents,
+                  getAssetName(i),
+                  this.options.prefix
+                )
+              );
 
-            this.noDuplicates.push(i);
+              this.noDuplicates.push(i);
+            }
           }
         });
       });
