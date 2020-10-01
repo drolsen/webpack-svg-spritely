@@ -221,7 +221,9 @@ class WebpackSvgSpritely {
           }
         });
       }
+    });
 
+    compiler.hooks.afterEmit.tap('WebpackSvgSpritely', () => {
       // Create manifest?
       if (this.options.manifest) {
         generateManifest(
