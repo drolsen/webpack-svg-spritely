@@ -1,6 +1,6 @@
-import test from 'ava';
-import fs from 'fs';
-import path from 'path';
+const test = require('ava');
+const fs = require('fs');
+const path = require('path');
  
 test('basic', t => {
   let insert = false;
@@ -17,14 +17,14 @@ test('basic', t => {
 });
 
 test('manifest', t => {
-  t.pass();
-  /*path.exists(path.resolve(__dirname, '../dist/manifest/icon-manifest.json'), (exists) => {
-    if (exists) {
-      t.pass();
-    } else {
-      t.fail();
-    }
-  }); */ 
+  let manifest = false;
+  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/manifest/icon-manifest.json'), 'utf8');  
+
+  if (testData) {
+    t.pass();
+  } else {
+    t.fail();
+  }
 });
 
 test('entry-html', t => {
@@ -41,7 +41,6 @@ test('entry-html', t => {
     t.fail();
   }
 });
-
 
 test('entry-js', t => {
   let insert = false;

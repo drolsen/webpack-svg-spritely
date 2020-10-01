@@ -32,10 +32,10 @@
     "ava-test": "ava ./test/ava.test.js"
   },
   "engines": {
-    "node": ">=10.15.1"
+    "node": ">=10.16.0"
   },
   "devDependencies": {
-    "ava": "^2.3.0",
+    "ava": "^3.13.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.4",
     "file-loader": "^4.2.0",
