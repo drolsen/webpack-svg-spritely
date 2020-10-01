@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 
 // Asset name helper
@@ -51,11 +53,22 @@ const getEntryFilePath = (entries, entry) => {
   return path;
 };
 
+// Generates manifest JSON from provided page and name
+
+const generateManifest = (path, data) => {
+  fs.writeFile(path, JSON.stringify(data), (err) => {
+    if(err) {
+      console.log(err);
+    }
+  });
+}
+
 class WebpackSvgSpritely {
   constructor(options) {
     options = options || {};
     this.noDuplicates = [];  // used within duplicate symbol prevention
     this.symbols = [];       // holds a collection of our converted symbols from svg assets
+    this.manifest = [];      // holds a collection of our icon's meta data into json object
     this.entryPath;
 
     // plugin options
@@ -66,7 +79,8 @@ class WebpackSvgSpritely {
       filename: (options.filename)
         ? options.filename.replace(/\[hash\]/g, generateHash())
         : `iconset-${generateHash()}.svg`,
-      entry: (options.entry) ? options.entry : false
+      entry: (options.entry) ? options.entry : false,
+      manifest: (options.manifest) ? options.manifest : false
     };
 
     this.options.url = (options.url)
@@ -100,6 +114,15 @@ class WebpackSvgSpritely {
                   this.options.prefix
                 )
               );
+
+              this.manifest.push({
+                name: getAssetName(i),
+                source: `${cleanSymbolContents(
+                  contents,
+                  getAssetName(i),
+                  this.options.prefix
+                )}`
+              })
 
               this.noDuplicates.push(i);
             }
@@ -197,6 +220,14 @@ class WebpackSvgSpritely {
             }
           }
         });
+      }
+
+      // Create manifest?
+      if (this.options.manifest) {
+        generateManifest(
+          path.resolve(`${compiler.options.output.path}/${this.options.manifest}`),
+          this.manifest
+        );
       }
     });
   }

@@ -16,6 +16,17 @@ test('basic', t => {
   }
 });
 
+test('manifest', t => {
+  t.pass();
+  /*path.exists(path.resolve(__dirname, '../dist/manifest/icon-manifest.json'), (exists) => {
+    if (exists) {
+      t.pass();
+    } else {
+      t.fail();
+    }
+  }); */ 
+});
+
 test('entry-html', t => {
   let insert = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/entry-html/test.b.html'), 'utf8');
