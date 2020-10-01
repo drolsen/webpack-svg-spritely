@@ -62,6 +62,7 @@ Option | Types | Description | Default
 `insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
 `url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
 `entry` | String | Allows you to define what entry file or html document to insert code into. | First entry or all documents
+`manifest` | String | Allows you to define path and filename to a generated a JSON manifest file of found symbols.
 
 ## options.output
 With the `output` option, you can specify a deeper location to where this plugin should write the sprite file under.
@@ -109,7 +110,6 @@ which effect sprite usage:
 ## options.insert
 The insert option allows you to define how sprite symbols gets inserted into the DOM for sprite usage when ran in browsers.
 
-
 ```js
 new WebpackSVGSpritely({
   insert: 'xhr | bundle | document | none'
@@ -130,7 +130,6 @@ Because this option reaches into the build's HTML asset output, it works with bo
 ### none
 When working with larger backend systems (Java or .Net) that inserts sprite symbols into documents, use the none option.
 This will still write a sprite file to disk for backend, but bypass any code from being inserted into client side documents.
-
 
 ## options.url
 If you choose to set the `insert.xhr` option, the default request location for sprite file will be `output location + filename`. If you wish to overload this default file endpoint you can do so with this option.
@@ -186,6 +185,20 @@ module.exports = {
   ]
 };
 ```
+
+## options.manifest
+This option allows you to set both the path and filename of a JSON manifest file. 
+This manifest file contains the name and individual SVG source of all the captured icons into a JSON format.
+
+```js
+new WebpackSVGSpritely({
+  manifest: '/path/filename.json'
+})
+```
+
+This is useful for larger systems that wish to present a list of available icons to end users that needs to be devoid of any JS, or even possibly "in-browser" requirements.
+
+By default this is false, and only enabled once you provide a string path. This will always generate a JSON format, so ensure that you choose .json as your path/filename's format.
 
 ---
 
