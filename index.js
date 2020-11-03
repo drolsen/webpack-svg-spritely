@@ -117,11 +117,7 @@ class WebpackSvgSpritely {
 
               this.manifest.push({
                 name: getAssetName(i),
-                source: `${cleanSymbolContents(
-                  contents,
-                  getAssetName(i),
-                  this.options.prefix
-                )}`
+                source: `${contents}`
               })
 
               this.noDuplicates.push(i);

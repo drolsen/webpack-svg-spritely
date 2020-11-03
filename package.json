@@ -8,7 +8,7 @@
     "webpack svg sprite",
     "webpack svg sprite plugin"
   ],
-  "version": "1.3.9",
+  "version": "1.4.0",
   "description": "Plugin that bundles project SVG files into a SVG sprite",
   "repository": "drolsen/webpack-svg-spritely",
   "bugs": {
