@@ -62,7 +62,7 @@ Option | Types | Description | Default
 `insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
 `url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
 `entry` | String | Allows you to define what entry file or html document to insert code into. | First entry or all documents
-`manifest` | String | Allows you to define path and filename to a generated a JSON manifest file of found symbols.
+`manifest` | String or Object | Allows you to define path and filename to a generated a JSON manifest file of found symbols.
 
 ## options.output
 With the `output` option, you can specify a deeper location to where this plugin should write the sprite file under.
