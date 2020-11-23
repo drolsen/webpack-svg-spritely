@@ -196,9 +196,35 @@ new WebpackSVGSpritely({
 })
 ```
 
-This is useful for larger systems that wish to present a list of available icons to end users that needs to be devoid of any JS, or even possibly "in-browser" requirements.
+This is useful for larger systems that wish to present a list of available icons to end users, that needs to be devoid of any JS, or even possibly "in-browser" requirements.
 
-By default this is false, and only enabled once you provide a string path. This will always generate a JSON format, so ensure that you choose .json as your path/filename's format.
+By default this is false, and only enabled once you provide a string path or object options. This will always generate a JSON format, so ensure that you choose .json as your path/filename's format.
+
+You can also `groupBy` your icons within the manifest json:
+```js
+new WebpackSVGSpritely({
+  manifest: {
+    path: '/path/filename.json',
+    groupBy: ['red', 'blue', 'green']
+  }
+})
+```
+
+The `groupBy` feature will group all icons that have a matching name to your configured words. The manifest.json  groupings are objects that use keys names from your configuration. All icons that do not match any `groupBy` configuration will be put into the object named "icons".
+
+You can also `filterOut` icons from the manifest json:
+```js
+new WebpackSVGSpritely({
+  manifest: {
+    path: '/path/filename.json',
+    filterOut: ['red', 'blue', 'green'],
+  }
+})
+```
+
+The `filterOut` feature will exclude all icons that have a matching name to your configured words.
+
+Keep in mind that with options configuration you need to supply the `path` as a explicit property.
 
 ---
 

@@ -55,12 +55,53 @@ const getEntryFilePath = (entries, entry) => {
 
 // Generates manifest JSON from provided page and name
 
-const generateManifest = (path, data) => {
-  fs.writeFile(path, JSON.stringify(data), (err) => {
+const generateManifest = (options, data) => {
+  if (!options.path) {
+    console.error('\x1b[31mError WebpackSvgSpritely: You have configured to generate a icon manifest.json file, but not provided a path to where it should be written yet.\u001b[0m\r\n');
+    return false;
+  }
+
+  /* Step one is to exclude any configured icons */
+  if (options.filterOut) {
+    Object.keys(options.filterOut).map((i) => {
+      const excludeFilter = options.filterOut[i];
+      Object.keys(data).map((j) => {
+        if (data[j].name.match(excludeFilter)) {
+          delete data[j];
+        }
+      });
+    });
+  }
+
+  /* Step two, if we have a groupBy option, we will group then write*/
+  if (options.groupBy) {
+    const groups = [];
+    Object.keys(options.groupBy).map((i) => {
+      const groupFilter = options.groupBy[i];
+      groups[groupFilter] = [];
+      Object.keys(data).map((j) => {
+        if (data[j].name.match(groupFilter)) {
+          groups[groupFilter].push(data[j]);
+          delete data[j];
+        }
+      });
+    });
+
+    fs.writeFile(options.path, JSON.stringify([{icons: data.filter((n) => n), ...groups}]), (err) => {
+      if(err) {
+        console.log(err);
+      }
+    });
+
+    return false;
+  }
+
+  /* Step three, we have a simple configuration so we will write */
+  fs.writeFile(options.path, JSON.stringify(data.filter((n) => n)), (err) => {
     if(err) {
       console.log(err);
     }
-  });
+  });   
 }
 
 class WebpackSvgSpritely {
@@ -222,8 +263,23 @@ class WebpackSvgSpritely {
     compiler.hooks.afterEmit.tap('WebpackSvgSpritely', () => {
       // Create manifest?
       if (this.options.manifest) {
+
+        // Options configuration
+        if (typeof this.options.manifest === 'object'){
+          this.options.manifest.path = (!this.options.manifest.path)
+            ? false
+            : path.resolve(`${compiler.options.output.path}/${this.options.manifest.path}`);
+        }
+
+        // Simple configuration
+        if (typeof this.options.manifest === 'string') {
+          this.options.manifest = {
+            path: path.resolve(`${compiler.options.output.path}/${this.options.manifest}`)
+          }
+        }
+
         generateManifest(
-          path.resolve(`${compiler.options.output.path}/${this.options.manifest}`),
+          this.options.manifest,
           this.manifest
         );
       }

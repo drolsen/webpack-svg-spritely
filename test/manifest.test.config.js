@@ -32,7 +32,11 @@ module.exports = (env, argv) => {
     new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
       output: '/images',
-      manifest: 'icon-manifest.json'
+      manifest: {
+        path: 'icon-manifest.json',
+        groupBy: ['red', 'green', 'blue'],
+        filterOut: ['yellow']
+      }
     })
   ];
   return config;
