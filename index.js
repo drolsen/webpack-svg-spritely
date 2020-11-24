@@ -55,18 +55,18 @@ const getEntryFilePath = (entries, entry) => {
 
 // Generates manifest JSON from provided page and name
 
-const generateManifest = (options, data) => {
+const generateManifest = (options, data, compiler) => {
   if (!options.path) {
     console.error('\x1b[31mError WebpackSvgSpritely: You have configured to generate a icon manifest.json file, but not provided a path to where it should be written yet.\u001b[0m\r\n');
     return false;
   }
+  const outputPath = path.resolve(`${compiler.options.output.path}/${options.path}`);
 
   /* Step one is to exclude any configured icons */
   if (options.filterOut) {
     Object.keys(options.filterOut).map((i) => {
-      const excludeFilter = options.filterOut[i];
       Object.keys(data).map((j) => {
-        if (data[j].name.match(excludeFilter)) {
+        if (data[j].name.match(options.filterOut[i])) {
           delete data[j];
         }
       });
@@ -87,21 +87,29 @@ const generateManifest = (options, data) => {
       });
     });
 
-    fs.writeFile(options.path, JSON.stringify({icons: data.filter((n) => n), ...groups}), (err) => {
-      if(err) {
-        console.log(err);
+    fs.writeFile(
+      outputPath,
+      JSON.stringify({icons: data.filter((n) => n), ...groups}),
+      (err) => {
+        if(err) {
+          console.log(err);
+        }
       }
-    });
+    );
 
     return false;
   }
 
   /* Step three, we have a simple configuration so we will write */
-  fs.writeFile(options.path, JSON.stringify(data.filter((n) => n)), (err) => {
-    if(err) {
-      console.log(err);
+  fs.writeFile(
+    outputPath,
+    JSON.stringify(data.filter((n) => n)),
+    (err) => {
+      if(err) {
+        console.log(err);
+      }
     }
-  });   
+  );
 }
 
 class WebpackSvgSpritely {
@@ -266,21 +274,22 @@ class WebpackSvgSpritely {
 
         // Options configuration
         if (typeof this.options.manifest === 'object'){
-          this.options.manifest.path = (!this.options.manifest.path)
-            ? false
-            : path.resolve(`${compiler.options.output.path}/${this.options.manifest.path}`);
+          if (!this.options.manifest.path) {
+            this.options.manifest.path = false;
+          }
         }
 
         // Simple configuration
         if (typeof this.options.manifest === 'string') {
           this.options.manifest = {
-            path: path.resolve(`${compiler.options.output.path}/${this.options.manifest}`)
+            path: this.options.manifest
           }
         }
 
         generateManifest(
           this.options.manifest,
-          this.manifest
+          this.manifest,
+          compiler
         );
       }
     });
