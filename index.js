@@ -87,7 +87,7 @@ const generateManifest = (options, data) => {
       });
     });
 
-    fs.writeFile(options.path, JSON.stringify([{icons: data.filter((n) => n), ...groups}]), (err) => {
+    fs.writeFile(options.path, JSON.stringify({icons: data.filter((n) => n), ...groups}), (err) => {
       if(err) {
         console.log(err);
       }
