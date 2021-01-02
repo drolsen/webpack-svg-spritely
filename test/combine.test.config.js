@@ -1,5 +1,4 @@
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const HtmlWebPackPlugin = require('html-webpack-plugin');
 const WebpackSVGSpritely = require('../index.js');
 const path = require('path');
 
@@ -9,8 +8,8 @@ const config = {
     testB: path.resolve(__dirname, 'test.b.js')
   },
   output: {
-    path: path.resolve(__dirname, '../dist/entry-html'), 
-    filename: '../entry-html/[name].js'
+    path: path.resolve(__dirname, '../dist/combine'), 
+    filename: '../combine/[name].js'
   },
   module: {
     rules: [{
@@ -20,7 +19,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../entry-html/images/'
+            'outputPath': '../path/images/'
           }
         }
       ]
@@ -34,18 +33,10 @@ const config = {
 module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
-    new HtmlWebPackPlugin({
-      'template': './test/test.a.html',
-      'filename': './index.a.html',
-    }),    
-    new HtmlWebPackPlugin({
-      'template': './test/test.b.html',
-      'filename': './index.b.html',
-    }),     
     new WebpackSVGSpritely({
       output: '/images',
-      insert: 'document',
-      entry: 'index.b.html'
+      insert: 'xhr',
+      combine: false
     })
   ];
   return config;

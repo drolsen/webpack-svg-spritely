@@ -62,6 +62,7 @@ Option | Types | Description | Default
 `insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
 `url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
 `entry` | String | Allows you to define what entry file or html document to insert code into. | First entry or all documents
+`combine` | Boolean | By default, multiple entry files will create a single combined sprite file for both entries. However if set to false, it will create unique sprite sheets per-entry.
 `manifest` | String or Object | Allows you to define path and filename to a generated a JSON manifest file of found symbols.
 
 ## options.output
