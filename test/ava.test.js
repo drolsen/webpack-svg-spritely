@@ -72,6 +72,24 @@ test('filename', t => {
   }
 });
 
+test('filter', t => {
+  let insert = false;
+  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/filtering/images/iconset.svg'), 'utf8');
+  
+  if (
+    testData.toString().indexOf('icon-left') === -1
+    && testData.toString().indexOf('icon-right') === -1
+  ) {
+    insert = true;
+  }
+
+  if (insert) {
+    t.pass();
+  } else {
+    t.fail();
+  }
+});
+
 test('insert-bundle', t => {
   let insert = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/insert-bundle/testA.js'), 'utf8');

@@ -3,44 +3,15 @@ const path = require('path');
 const { sources } = require('webpack');
 const crypto = require('crypto');
 
-// Asset name helper
-const getAssetName = (assetPath) => assetPath.split('/')[assetPath.split('/').length - 1].replace(/(.*)\.(.*)/, '$1');
-
 // Template cleaning helper
 const cleanTemplateLiteral = (literal) => literal.replace(/(\r\n|\n|\r)/gm , ' ').replace(/\s+/g, ' ').trim();
 
-// Wraps collected symbols into a svg parent tag
-const makeSymbols = (symbols) => cleanTemplateLiteral(`
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    style="position:absolute; width: 0; height: 0"
-  >
-    ${symbols.join('')}
-  </svg>
-`);
-
-// Floats sprite file created from webpack svg spritely, into the current build
-const writeSpriteToDisk = (assets, filename, symbols) => assets[filename] = {
-  source: () => makeSymbols(symbols),
-  size: () => symbols.length
-};
-
 // Source symbol cleaning helper
-const cleanSymbolContents = (contents, name, prefix) => contents
-  .replace(/<svg/g, `<symbol id="${prefix}-${name}"`)
+const cleanSymbolContents = (name, prefix, contents) => contents
+  .replace(/<svg/g, `<symbol id="${prefix}-${path.basename(name, '.svg')}"`)
   .replace(/<\/svg>/g, '</symbol>')
   .replace('xmlns="http://www.w3.org/2000/svg"', '')
   .replace(/<style>(.*)<\/style>/g, '<style><![CDATA[$1]]></style>');
-
-// Resolves a entry file path whether one is specified in configuration, or not.
-const getEntryFilename = (entries) => {
-  const collection = [];
-  for (entry in entries) {
-    collection[`${entry}${path.extname(entries[entry].import[0])}`] = entries[entry].import[0];
-  }
-
-  return collection;
-};
 
 // Generates manifest JSON from provided page and name
 const generateManifest = (options, data, compiler) => {
@@ -109,7 +80,9 @@ class WebpackSvgSpritely {
       filename: `iconset-[hash].svg`,
       entry: false,
       manifest: false,
-      url: false
+      url: false,
+      combine: false,
+      filter: []
     }, options);
 
     this.entries = [];
@@ -118,88 +91,162 @@ class WebpackSvgSpritely {
     this.noDuplicates = [];  // used within duplicate symbol prevention
 
     if (!this.options.url) { 
-      this.options.url = `${this.options.output}/${this.options.filename}`; 
+      this.options.url = `${this.options.output}/${this.options.filename}`;
     }
   }
 
-  apply(compiler) {
-    this.entries = getEntryFilename(compiler.options.entry);
+  // Generates cache busting filename hash
+  makeHash() {
+    return crypto.createHash('md5').update(new Date().toLocaleTimeString() + Math.floor(Math.random() * 1000)).digest('hex')
+  };
 
-    compiler.hooks.compilation.tap({ name: 'WebpackSvgSpritely' }, (compilation) => {
-      // Create hash for our icon sprite sheet
-      if (this.options.filename.indexOf('[hash')) {
-        this.options.filename = this.options.filename.replace(
-          /\[hash\]/g, 
-          crypto.createHash('md5').update(new Date().toLocaleTimeString()).digest('hex')
-        );
+  // Gather entry file(s) into custom object.
+  getEntries(entries) {
+    const collection = [];
+    for (let entry in entries) {
+      collection[`${entry}${path.extname(entries[entry].import[0])}`] = {
+        rawRequest: entries[entry].import[0]
+      };
+    }
+
+    return collection;
+  };
+
+  // Gather symbols from one, or all this.entries
+  getSymbols(entry = false) {
+    let symbols = [];
+    if (entry) {
+      if (this.entries[entry]) {
+        const { assets } = this.entries[entry];
+        if (assets) { 
+          Object.keys(assets).map((i) => {
+            if (this.options.filter.indexOf(path.basename(assets[i].name, '.svg')) !== -1) { return false; }
+            symbols.push(assets[i].symbol);
+          });
+        }
       }
+    } else {
+      Object.keys(this.entries).map((i) => {
+        const { assets } = this.entries[i];
+        if (assets) {
+          Object.keys(assets).map((j) => {
+            if (this.options.filter.indexOf(path.basename(assets[j].name, '.svg')) !== -1) { return false; }
+            symbols.push(assets[j].symbol);
+          });
+        }
+      });
+    }
 
-      // Grabbing SVG source at the most earliest point possible to create `this.symbols` with.
-      compilation.hooks.processAssets.tap(
-        {
-          name: 'WebpackSvgSpritely',
-          stage: compilation.PROCESS_ASSETS_STAGE_ADDITIONAL, // see below for more stages
-          additionalAssets: true          
-        },
-        (assets) => {
+    if (symbols.length) {
+      return this.makeSymbols(symbols);
+    }
 
-          // Collect svg files into symbols
-          for (let asset in assets) {
-            if (
-              assets[asset].source
-              && asset.indexOf('.svg') !== -1 
-              && asset.indexOf(this.options.filename) === -1 // <- we don't want to process iconset-xxxxxx
-            ) {
-              const contents = assets[asset].source().toString('utf8');
-              // no files missing <svg tag
-              // no files that are font svg files
-              if (contents.indexOf('<svg') !== -1
-                && contents.indexOf('<font') === -1
-                && contents.indexOf('<font') === -1
-                && contents.indexOf('<glyph') === -1
-              ) {
-                if (this.noDuplicates.indexOf(asset) === -1) {
-                  this.symbols.push(
-                    cleanSymbolContents(
-                      contents,
-                      getAssetName(asset),
-                      this.options.prefix
-                    )
-                  );
+    return false;
+  };
 
-                  this.manifest.push({
-                    name: getAssetName(asset),
-                    source: `${contents}`
-                  })
+  // Wraps symbols into a svg parent tag
+  makeSymbols(symbols) {
+    return cleanTemplateLiteral(`
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        style="position:absolute; width: 0; height: 0"
+      >
+        ${symbols.join('')}
+      </svg>
+    `)
+  };
 
-                  this.noDuplicates.push(asset);
-                }
-              }
-            }
-          }
+  // Make and insert sprite sheet
+  makeSpriteSheet(assets) {
+    if (this.options.combine) {
+      const symbols = this.getSymbols();
+      if (symbols) { 
+        this.options.url = this.options.url.replace(/\[hash\]/g, this.makeHash());
+        if (this.options.url.indexOf('.svg') === -1) { this.options.url = `${this.options.url}.svg`; }
+        
+        assets[`.${this.options.output}/${this.options.url}`] = {
+          source: () => symbols,
+          size: () => symbols.length
+        };
+      }          
+    } else {
+      Object.keys(this.entries).map((i) => {
+        const symbols = this.getSymbols(i);
+        if (symbols) {
+          let uniqueUrl = `.${this.options.output}/${path.basename(this.options.url.replace(/\[hash\]/g, this.entries[i].hash))}`;
+          if (uniqueUrl.indexOf('.svg') === -1) { uniqueUrl = `${uniqueUrl}.svg`; }
 
-          /* Entry file inserting */
-          // XHR / None types
-          if (['xhr', 'none'].indexOf(this.options.insert) !== -1) {
-            writeSpriteToDisk(
-              assets,
-              `.${this.options.output}/${this.options.filename}`,
-              this.symbols
+          assets[uniqueUrl] = {
+            source: () => symbols,
+            size: () => symbols.length
+          };
+        }                       
+      });
+    }
+
+    return assets;
+  }   
+
+  apply(compiler) {
+    this.passes = undefined;
+    this.entries = this.getEntries(compiler.options.entry);
+
+    compiler.hooks.compilation.tap({ name: 'WebpackSvgSpritely' }, (compilation) => {      
+      // Gather association between entry files and assets and SVG symbols.
+      compilation.hooks.chunkAsset.tap('WebpackSvgSpritely', (chunk, filename) => {
+        const assets = [...chunk.auxiliaryFiles];
+        const entry = this.entries[path.basename(filename)];
+        if (!entry) { return false; }
+        entry.assets = Object.keys(assets).map((i) => {
+          let asset = assets[i];
+          if (asset.indexOf('.svg') !== -1) {
+            asset = compilation.getAsset(asset);
+            const { name } = asset;
+            const { source } = asset;
+
+            asset.symbol = cleanSymbolContents(
+              name,
+              this.options.prefix,
+              source.source().toString('utf8'),
             );
 
-            for (let asset in assets) {
-              if (
-                compilation.getAsset(asset).source 
-                && this.entries[path.basename(asset)]
-                && asset.indexOf(this.options.filename) === -1 // <- we don't want to process iconset-xxxxxx
-              ) {
+            entry.hash = this.makeHash();
 
+            return asset;
+          }
+
+          return false;           
+        }).filter((n) => n);
+      });
+      
+      // Code insert
+      if (this.passes === 0) {
+        compilation.hooks.processAssets.tap(
+          {
+            name: 'WebpackSvgSpritely',
+            stage: compilation.PROCESS_ASSETS_STAGE_ANALYSE, // see below for more stages
+            additionalAssets: true          
+          },
+          (assets) => {
+            for (let asset in assets) {            
+              /********************/
+              /* XHR / None types */
+              /********************/
+              if (
+                ['xhr', 'none'].indexOf(this.options.insert) !== -1 
+                && this.entries[path.basename(asset)]
+              ) {
+                assets = this.makeSpriteSheet(assets);
                 const contents = assets[asset].source();
                 const template = cleanTemplateLiteral(`
                    /*** WebpackSvgSpritely ***/\n\r
                    (() => { 
                     var WP_SVG_XHR = new XMLHttpRequest();
-                    WP_SVG_XHR.open('GET', '${this.options.url}', true);
+                    WP_SVG_XHR.open('GET', '${
+                      (this.options.combine) 
+                        ? this.options.url 
+                        : this.options.url.replace(/\[hash\]/g, this.entries[path.basename(asset)].hash)
+                    }', true);
 
                     WP_SVG_XHR.onload = function() {
                       if (!WP_SVG_XHR.responseText || WP_SVG_XHR.responseText.substr(0, 4) !== '<svg') {
@@ -219,20 +266,17 @@ class WebpackSvgSpritely {
                 compilation.updateAsset(
                   asset,
                   new sources.RawSource(contents + template)
-                );    
+                ); 
               }
-            } 
-          }
 
-          // Bundle inserting (meaning symbols and all are inserted, no XHR)
-          if (['bundle'].indexOf(this.options.insert) !== -1){
-            // Insert.bundle
-            for (let asset in assets) {
+              /********************/
+              /* Bundle inserting */
+              /********************/
               if (
-                compilation.getAsset(asset).source
-                && asset.indexOf(this.options.filename) === -1 // <- we don't want to process iconset-xxxxxx
+                ['bundle'].indexOf(this.options.insert) !== -1 
                 && this.entries[path.basename(asset)]
               ) {
+                // Insert.bundle
                 const contents = compilation.getAsset(asset).source.source();
                 const template = cleanTemplateLiteral(`
                   var WP_SVG_DIV = document.createElement('div');
@@ -245,7 +289,7 @@ class WebpackSvgSpritely {
                         height: 0
                       "
                     >
-                      ${this.symbols.join('').replace(/(\r\n|\n|\r)/gm, '')}
+                      ${this.getSymbols((this.options.combine) ? false : asset)}
                     </svg>
                   ';
                   document.body.insertBefore(
@@ -259,25 +303,22 @@ class WebpackSvgSpritely {
                   new sources.RawSource(contents + template)
                 );
               }
-            }
-          }
 
-          /* Document file inserting */
-          if (['document'].indexOf(this.options.insert) !== -1) {
-            for (let asset in assets) {            
+              /***************************/
+              /* Document file inserting */
+              /***************************/
               if (
-                compilation.getAsset(asset).source
+                ['document'].indexOf(this.options.insert) !== -1
                 && asset.indexOf('.html') !== -1
-              ) {
+              ) {          
                 const contents = compilation.getAsset(asset).source.source().replace(
                   /<body>([\s\S]*?)<\/body>/,
-                  `<body>\n<div><svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width: 0; height: 0">${this.symbols.join('')}</svg></div>\n$1</body>`
+                  `<body>\n<div><svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width: 0; height: 0">
+                  ${this.getSymbols()}
+                  </svg></div>\n$1</body>`
                 );
 
-                if (
-                  this.options.entry
-                  && asset.indexOf(this.options.entry) !== -1
-                ) {
+                if (this.options.entry && path.basename(asset) === asset.indexOf(this.options.entry)) {
                   compilation.updateAsset(
                     asset,
                     new sources.RawSource(contents)
@@ -288,14 +329,18 @@ class WebpackSvgSpritely {
                     new sources.RawSource(contents)
                   );
                 }
-              }
+              }          
             }
-          }          
-        }
-      );         
-    });
+          }
+        );
+      }
 
-    // Inject into html documents if flagged to be document insert
+      // Because of how late in the process we gather symbols, a additional pass is needed
+      compilation.hooks.needAdditionalPass.tap({ name: 'WebpackSvgSpritely' }, () =>  {
+        this.passes = (this.passes === undefined) ? 0 : (this.passes + 1);
+        return (this.passes === 0) ? true : false;
+      });       
+    });
 
     // Create manifest file
     compiler.hooks.afterEmit.tap('WebpackSvgSpritely', () => {
