@@ -58,10 +58,12 @@ Option | Types | Description | Default
 --- | --- | --- | ---
 `output` | String | Location of where sprite file gets written to disk. | Relative to Webpack build's output.
 `filename` | String | Name of the sprite file that gets written to disk. | iconset-[hash].svg
+`filter` | Array | Name of the SVG files you wish to exclude from sprite(s). | no filtering
 `prefix` | String | Prefix used in the sprite file symbol's name | `icon-`
 `insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
 `url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
 `entry` | String | Allows you to define what entry file or html document to insert code into. | First entry or all documents
+`combine` | Boolean | Combines all SVG files into single sprite across multiple Webpack entry files. | false
 `manifest` | String or Object | Allows you to define path and filename to a generated a JSON manifest file of found symbols.
 
 ## options.output
@@ -74,15 +76,26 @@ new WebpackSVGSpritely({
 })
 ```
 
-## optins.filename
+## options.filename
 This option allows you to specify a custom name for the sprite file.
 You can use a `[hash]` flag to combine a MD5 cache pop hash to filenames.
 
-Please note: if you using a [hash] flag within `filename` you are subjected to unique hash numbers per build. Consider removing `[hash]` flag, if you have logic beyond this plugin that needs a consistent sprite filename when written to disk.
+**Note:** if you using a [hash] flag within `filename` you are subjected to unique hash numbers per build. Consider removing `[hash]` flag, if you have logic beyond this plugin that needs a consistent sprite filename when written to disk.
 
 ```js
 new WebpackSVGSpritely({
   filename: 'custom-svg-sprite-[hash].svg'
+})
+```
+
+## options.filter
+This option allows you to specify an array of SVG filenames you wish to exclude from generated sprite sheets.
+
+**Note:** There is no RegEx or wildcard abilities here and must be an exact 1:1 of the SVG filename you wish to explicitly exclude. However the inclusion or exclusion of SVG file extension is optional to help curve any miss configurations.
+
+```js
+new WebpackSVGSpritely({
+  filter: ['bob.svg', 'ross.svg', 'paintings']
 })
 ```
 
@@ -186,6 +199,34 @@ module.exports = {
 };
 ```
 
+## options.combine
+When using multiple entry files for a Webpack configuration: 
+```js
+entry: {
+  testA: 'test.a.half.js',
+  testB: 'test.b.half.js'
+}
+```
+
+Webpack SVG Spritely will (by default) create unique sprite sheets per configured entry files. Each sprite sheet containting only it's corresponding entry file's SVG files.
+
+However, if you would like to consolidate all svg files from multiple entry files in a single sprite sheet setting the combine option to `true` will do just that: 
+
+```js
+new WebpackSVGSpritely({
+  combine: true
+})
+```
+
+**Note:** Because of the way HTML documents are brought into Webpack builds by means of HTMLWebpackPlugin:
+```js
+new HtmlWebPackPlugin({
+  'template': './some.html',
+  'filename': './index.html',
+}),
+```
+There is zero association to these configured HTML documents, and one or another entry file. Therefor, if you have configured Webpack SVG Spritely to use `insert: 'document'` this combine option will have no effect, and your HTML document(s) will contain assets from all configured entry files.
+
 ## options.manifest
 This option allows you to set both the path and filename of a JSON manifest file. 
 This manifest file contains the name and individual SVG source of all the captured icons into a JSON format.
@@ -264,8 +305,10 @@ Simply run `npm run test` or `yarn test` from the root of the plugin to run all 
 If you would like to change a test, update the root package.json file's `test` script to use any of the `/test/*.test.config.js` files.
 
 - `basic.test.config.js` = Should produce a out of the box sprite file and inject XHR code into bundled entry file.
+- `minified.test.config.js` = Should combine two Webpack entry file's assets into a single sprite.
 - `entry.test.config.js` = Should produce a out of the box sprite file and inject XHR code into specified entry file.
 - `filename.test.config.js` = Should produce a sprite file with custom name and use MD5 cache popping [hash] flag.
+- `filter.test.config.js` = Should produce a sprite file that excludes icon-left and icon-right.
 - `path.test.config.js` = Should set custom XHR endpoint path within the injected XHR code.
 - `inject.nothing.test.config.js` = Should inject nothing into entry file, but write sprite file to disk still.
 - `inject.xhr.test.config.js` = Should inject XHR code into entry file and write sprite to disk.
