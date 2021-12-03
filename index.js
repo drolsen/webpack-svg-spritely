@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const getAssetName = (assetPath) => assetPath.split('/')[assetPath.split('/').length - 1].replace(/(.*)\.(.*)/, '$1');
 
 // Generates cache busting filename hash
-const generateHash = () => crypto.createHash('md5').update(new Date().toLocaleTimeString()).digest('hex');
+const generateHash = (source) => crypto.createHash('md5').update(JSON.stringify(source)).digest('hex');
 
 // Template cleaning helper
 const cleanTemplateLiteral = (literal) => literal.replace(/(\r\n|\n|\r)/gm , ' ').replace(/\s+/g, ' ').trim();
@@ -22,9 +22,9 @@ const makeSymbols = (symbols) => cleanTemplateLiteral(`
 `);
 
 // Floats sprite file created from webpack svg spritely, into the current build
-const writeSpriteToDisk = (compilation, filename, symbols) => compilation.assets[filename] = {
-  source: () => makeSymbols(symbols),
-  size: () => symbols.length
+const writeSpriteToDisk = (compilation, filename, source, size) => compilation.assets[filename] = {
+  source: () => source,
+  size: () => size
 };
 
 // Source symbol cleaning helper
@@ -115,9 +115,11 @@ const generateManifest = (options, data, compiler) => {
 class WebpackSvgSpritely {
   constructor(options) {
     options = options || {};
+    this.name = 'WebpackSvgSpritely';
     this.noDuplicates = [];  // used within duplicate symbol prevention
     this.symbols = [];       // holds a collection of our converted symbols from svg assets
     this.manifest = [];      // holds a collection of our icon's meta data into json object
+    this.svgSource = '';
     this.entryPath;
 
     // plugin options
@@ -125,60 +127,76 @@ class WebpackSvgSpritely {
       insert: (options.insert) ? options.insert : 'xhr',
       prefix: (options.prefix) ? options.prefix : 'icon',
       output: (options.output) ? options.output : '',
-      filename: (options.filename)
-        ? options.filename.replace(/\[hash\]/g, generateHash())
-        : `iconset-${generateHash()}.svg`,
       entry: (options.entry) ? options.entry : false,
-      manifest: (options.manifest) ? options.manifest : false
+      manifest: (options.manifest) ? options.manifest : false,
+      filename: (options.filename) ? options.filename : '',
+      url: (options.url) ? options.url : ''
     };
 
-    this.options.url = (options.url)
-      ? `${options.url}/${this.options.filename}`
-      : `${this.options.output}/${this.options.filename}`;
   }
 
   apply(compiler) {
     this.entryPath = getEntryFilePath(compiler.options.entry, this.options.entry);
-    // This plugin requires two passes
-    compiler.hooks.compilation.tap('WebpackSvgSpritely', (compilation) => {
+
+    compiler.hooks.compilation.tap(this.name, (compilation) => {
+
       // Grabbing SVG source at the most earliest point possible to create `this.symbols` with.
-      compilation.hooks.moduleAsset.tap('WebpackSvgSpritely', (module, filename) => {
-        if (filename.indexOf('.svg') === -1) { return false; }              // svg files only please
-        const asset = module.buildInfo.assets;
+      compilation.hooks.optimize.tap(this.name, () => {
+        Object.keys(compilation.modules).map((i) => {
+          const module = compilation.modules[i];
+          if (module.buildInfo.assets) {
+            Object.keys(module.buildInfo.assets).map((assetName) => {
+              const filename = compilation.getPath(assetName);
+              if (filename.indexOf('.svg') !== -1) { // svg files only please
+                const asset = module.buildInfo.assets[assetName];
+                const contents = asset._value.toString('utf8');
+                // no files missing <svg tag
+                // no files that are font svg files
+                if (contents.indexOf('<svg') !== -1
+                    && contents.indexOf('<font') === -1
+                    && contents.indexOf('<font') === -1
+                    && contents.indexOf('<glyph') === -1
+                ) {
+                  if (this.noDuplicates.indexOf(asset) === -1) {
+                    const name = getAssetName(filename);
+                    this.symbols.push({
+                      name, source: cleanSymbolContents(
+                          contents,
+                          name,
+                          this.options.prefix
+                      )
+                    });
 
-        Object.keys(asset).map((i) => {
-          const contents = asset[i]._value.toString('utf8');
-          // no files missing <svg tag
-          // no files that are font svg files
-          if (contents.indexOf('<svg') !== -1
-            && contents.indexOf('<font') === -1
-            && contents.indexOf('<font') === -1
-            && contents.indexOf('<glyph') === -1
-          ) {
-            if (this.noDuplicates.indexOf(i) === -1) {
-              this.symbols.push(
-                cleanSymbolContents(
-                  contents,
-                  getAssetName(i),
-                  this.options.prefix
-                )
-              );
+                    this.manifest.push({
+                      name, source: `${contents}`
+                    })
 
-              this.manifest.push({
-                name: getAssetName(i),
-                source: `${contents}`
-              })
-
-              this.noDuplicates.push(i);
-            }
+                    this.noDuplicates.push(asset);
+                  }
+                }
+              }
+            });
           }
         });
       });
 
+      const gatherResults = () => {
+        this.symbols.sort((a,b) => a.name.localeCompare(b.name));
+        this.manifest.sort((a,b) => a.name.localeCompare(b.name));
+        this.svgSource = makeSymbols(this.symbols.map(s => s.source));
+        this.options.filename = (this.options.filename)
+            ? this.options.filename.replace(/\[hash\]/g, generateHash(this.svgSource))
+            : `iconset-${generateHash(this.svgSource)}.svg`;
+        this.options.url = (this.options.url)
+            ? `${this.options.url}/${this.options.filename}`
+            : `${this.options.output}/${this.options.filename}`;
+      };
+
       // Adds a [flag] hook for potential code inject during emit tap below
-      compilation.hooks.optimizeModules.tap('WebpackSvgSpritely', (modules) => {
+      compilation.hooks.optimizeModules.tap(this.name, (modules) => {
         Object.keys(modules).map((i) => {
           if (modules[i].rawRequest === this.entryPath) {
+            gatherResults();
             let template;
 
             // Inject XHR request (note has no flag find/replace need like bundle below has)
@@ -217,27 +235,29 @@ class WebpackSvgSpritely {
           }
         });
       });
+
     });
 
     // Finally we add sprite file into the build's assets and inject code over [flag] hook
-    compiler.hooks.emit.tap('WebpackSvgSpritely', (compilation) => {
+    compiler.hooks.emit.tap(this.name, (compilation) => {
       // Insert.xhr & Insert.none
       if (['xhr', 'none'].indexOf(this.options.insert) !== -1) {
         writeSpriteToDisk(
           compilation,
           `.${this.options.output}/${this.options.filename}`,
-          this.symbols
+          this.svgSource, this.symbols.length
         );
       }
 
       // Insert.bundle
       if (['bundle', 'document'].indexOf(this.options.insert) !== -1) {
-        Object.keys(compilation.assets).map((i) => {
+        const symbolsString = this.symbols.map(s => s.source).join('');
+        Object.keys(compilation.assets).sort().map((i) => {
           if (this.options.insert === 'bundle') {
             if (!compilation.assets[i].source()) { return false; }
             let source = compilation.assets[i].source();
             if (source.indexOf('__WP_SVG_SPRITELY_SYMBOLS__') !== -1) {
-              source = source.replace('__WP_SVG_SPRITELY_SYMBOLS__', this.symbols.join('').replace(/(\r\n|\n|\r)/gm, ''));
+              source = source.replace('__WP_SVG_SPRITELY_SYMBOLS__', symbolsString.replace(/(\r\n|\n|\r)/gm, ''));
               compilation.assets[i] = {
                 source: function () {
                   return source;
@@ -254,7 +274,7 @@ class WebpackSvgSpritely {
             let HTML = compilation.assets[i].source().toString();
             HTML = HTML.replace(
               /<body>([\s\S]*?)<\/body>/,
-              `<body>\n<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width: 0; height: 0">${this.symbols.join('')}</svg>\n$1</body>`);
+              `<body>\n<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute; width: 0; height: 0">${symbolsString}</svg>\n$1</body>`);
 
             if (this.options.entry) {
               if (i.indexOf(this.options.entry) !== -1) {
@@ -268,7 +288,7 @@ class WebpackSvgSpritely {
       }
     });
 
-    compiler.hooks.afterEmit.tap('WebpackSvgSpritely', () => {
+    compiler.hooks.afterEmit.tap(this.name, () => {
       // Create manifest?
       if (this.options.manifest) {
 
