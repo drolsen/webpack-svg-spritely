@@ -44,7 +44,7 @@ module.exports = (env, argv) => {
     }),     
     new WebpackSVGSpritely({
       output: '/images',
-      insert: 'document',
+      insert: 'xhr',
       entry: 'index.b.html'
     })
   ];

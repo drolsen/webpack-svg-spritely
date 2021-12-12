@@ -30,8 +30,8 @@ test('manifest', t => {
 test('entry-html', t => {
   let insert = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/entry-html/index.b.html'), 'utf8');
-  
-  if (testData.toString().indexOf('<symbol id="icon-down"') !== -1) {
+
+  if (testData.toString().indexOf('Invalid SVG Response') !== -1) {
     insert = true;
   }
 
@@ -51,6 +51,26 @@ test('entry-js', t => {
   }
 
   if (insert) {
+    t.pass();
+  } else {
+    t.fail();
+  }
+});
+
+test('entry-multi-js', t => {
+  let passes = false;
+  const testDataA = fs.readFileSync(path.resolve(__dirname, '../dist/entry-js/testA.js'), 'utf8');
+  const testDataB = fs.readFileSync(path.resolve(__dirname, '../dist/entry-js/testB.js'), 'utf8');
+  
+  if (testDataA.toString().indexOf('Invalid SVG Response') !== -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    passes = true;
+  }
+
+  if (testDataB.toString().indexOf('Invalid SVG Response') !== -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    passes = true;
+  }  
+
+  if (passes) {
     t.pass();
   } else {
     t.fail();
@@ -95,21 +115,6 @@ test('insert-bundle', t => {
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/insert-bundle/testA.js'), 'utf8');
   
   if (testData.toString().indexOf('WP_SVG_DIV') !== -1) {
-    insert = true;
-  }
-
-  if (insert) {
-    t.pass();
-  } else {
-    t.fail();
-  }
-});
-
-test('insert-document', t => {
-  let insert = false;
-  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/insert-document/index.a.html'), 'utf8');
-  
-  if (testData.toString().indexOf('<symbol') !== -1) {
     insert = true;
   }
 

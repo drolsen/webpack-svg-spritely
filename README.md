@@ -58,11 +58,11 @@ Option | Types | Description | Default
 --- | --- | --- | ---
 `output` | String | Location of where sprite file gets written to disk. | Relative to Webpack build's output.
 `filename` | String | Name of the sprite file that gets written to disk. | iconset-[hash].svg
-`filter` | Array | Name of the SVG files you wish to exclude from sprite(s). | no filtering
+`filter` | String Array | Name of the SVG files you wish to exclude from sprite(s). | no filtering
 `prefix` | String | Prefix used in the sprite file symbol's name | `icon-`
 `insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
 `url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
-`entry` | String | Allows you to define what entry file or html document to insert code into. | First entry or all documents
+`entry` | String Array | Allows you to define what entry file(s) or html document(s) to insert sprite or XHR JS into. | All webpack entry files
 `combine` | Boolean | Combines all SVG files into single sprite across multiple Webpack entry files. | false
 `manifest` | String or Object | Allows you to define path and filename to a generated a JSON manifest file of found symbols.
 
@@ -125,7 +125,7 @@ The insert option allows you to define how sprite symbols gets inserted into the
 
 ```js
 new WebpackSVGSpritely({
-  insert: 'xhr | bundle | document | none'
+  insert: 'xhr | bundle | none'
 })
 ```
 
@@ -134,11 +134,6 @@ XHR code snip get inserted into your build's entry file(s). The XHR option will 
 
 ### bundle
 If you wish to not write sprite to disk / XHR option, you can bundle sprite symbols directly into your build's entry file(s) instead. This can increase your bundled size pretty quickly, but does ensure svg sprite works offline.
-
-### document
-If you have HTML assets in your build's ouput, you can insert the sprite symbols into these HTML document(s). This bypasses any need for you to insert code into any entry, and the needed for a sprite file to be written to disk.
-
-Because this option reaches into the build's HTML asset output, it works with both [HTMLWebpackPlugin](https://www.npmjs.com/package/html-webpack-plugin) and [CopyWebpackPlugin](https://www.npmjs.com/package/copy-webpack-plugin) configuration.
 
 ### none
 When working with larger backend systems (Java or .Net) that inserts sprite symbols into documents, use the none option.
@@ -154,9 +149,9 @@ new WebpackSVGSpritely({
 ```
 
 ## options.entry
-If you would like to specify a specific file to insert code into (when using multiple entry files or html document), this `entry` option will allow you to do just that. By default, without specifying an entry file, code can be inserted into first found entry or all html documents.
+If you would like to specify a specific file to insert code into (when using multiple entry files or html documents), this `entry` option will allow you to do just that. By default, without specifying an entry file, code can be inserted into all webpack configured entry files.
 
-If you use the `insert.xhr` or `insert.bundle`, this option pertains to entry files:
+If you referencing a by imported file name or by shorthand name:
 ```js
 module.exports = {
   "entry": {
@@ -168,14 +163,32 @@ module.exports = {
   },
   "plugins": [
     new WebpackSVGSpritely({
-      insert: 'xhr or bundle',
-      entry: 'testB'
+      insert: 'xhr|bundle',
+      entry: ['testB']
     })
   ]
 };
 ```
 
-If using `insert.document` instead, this option pertains to html documents. 
+```js
+module.exports = {
+  "entry": {
+    testA: 'test.a.js',
+    testB: 'test.b.js'
+  },
+  output: {
+    filename: '../dist/basic/[name].js'
+  },
+  "plugins": [
+    new WebpackSVGSpritely({
+      insert: 'xhr|bundle',
+      entry: ['test.b.js']
+    })
+  ]
+};
+```
+
+If using html entry instead: 
 ```js
 module.exports = {
   "entry": {
@@ -192,8 +205,8 @@ module.exports = {
       'filename': './documents/[name].html',
     }),
     new WebpackSVGSpritely({
-      insert: 'document',
-      entry: 'index.html'
+      insert: 'xhr|bundle',
+      entry: ['index.html']
     })
   ]
 };
