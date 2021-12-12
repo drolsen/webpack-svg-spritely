@@ -57,6 +57,7 @@ class WebpackSvgSpritely {
     this.options = Object.assign({
       insert: 'xhr',
       prefix: 'icon',
+      location: 'bodyStart',
       output: '',
       filename: `iconset-[hash].svg`,
       entry: [],
@@ -127,13 +128,9 @@ class WebpackSvgSpritely {
   // Makes XHR JS template literal
   makeXHRCode() {
     return cleanTemplateLiteral(`
-       (() => {
+       (function() {
         var WP_SVG_XHR = new XMLHttpRequest();
-        WP_SVG_XHR.open('GET', '${
-          (this.options.combine)
-            ? this.options.url
-            : this.options.url.replace(/\[hash\]/g, this.hash)
-        }', true);
+        WP_SVG_XHR.open('GET', '${this.options.url.replace(/\[hash\]/g, this.hash)}', true);
 
         WP_SVG_XHR.onload = function() {
           if (!WP_SVG_XHR.responseText || WP_SVG_XHR.responseText.substr(0, 4) !== '<svg') {
@@ -142,9 +139,12 @@ class WebpackSvgSpritely {
           if (WP_SVG_XHR.status < 200 || WP_SVG_XHR.status >= 300) {
             return;
           }
-          var div = document.createElement('div');
-          div.innerHTML = WP_SVG_XHR.responseText;
-          document.body.insertBefore(div, document.body.childNodes[0]);
+          var WP_SVG_DIV = document.createElement('div');
+          WP_SVG_DIV.dataset.sheetFileName = '${path.parse(this.options.url.replace(/\[hash\]/g, this.hash)).name}';
+
+          WP_SVG_DIV.innerHTML = WP_SVG_XHR.responseText;
+          ${this.options.location === 'bodyStart' ? 'document.body.insertBefore(WP_SVG_DIV, document.body.childNodes[0]);' : ''}
+          ${this.options.location === 'bodyEnd' ? 'document.body.append(WP_SVG_DIV);' : ''}
         };
         WP_SVG_XHR.send();
       })();\n\r
@@ -155,6 +155,7 @@ class WebpackSvgSpritely {
   makeBundleCode(asset) {
     return cleanTemplateLiteral(`
       var WP_SVG_DIV = document.createElement('div');
+      WP_SVG_DIV.dataset.sheetFileName = 'bundled-inline';
       WP_SVG_DIV.innerHTML = '
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -167,10 +168,8 @@ class WebpackSvgSpritely {
           ${this.getSymbols((this.options.combine) ? false : asset)}
         </svg>
       ';
-      document.body.insertBefore(
-        WP_SVG_DIV,
-        document.body.childNodes[0]
-      );
+      ${this.options.location === 'bodyStart' ? 'document.body.insertBefore(WP_SVG_DIV, document.body.childNodes[0]);' : ''}
+      ${this.options.location === 'bodyEnd' ? 'document.body.append(WP_SVG_DIV);' : ''}
     `);
   };
 
@@ -246,7 +245,8 @@ class WebpackSvgSpritely {
             /* HTML document inserting */
             /***************************/            
             if (
-              this.options.entry.length 
+              this.options.insert !== 'none'
+              && this.options.entry.length 
               && this.options.entry.some((n) => n.indexOf('.html') !== -1)
             ) {
               const { insert } = this.options;
@@ -260,16 +260,13 @@ class WebpackSvgSpritely {
                       i,
                       new sources.RawSource(
                         source.replace(
-                        /<body>([\s\S]*?)<\/body>/,
-                        `<body>\r\n$1\r\n<script>
-                          ${
+                        /<body>([\s\S]*?)<\/body>/, `<body>\r\n$1\r\n<script>${
                             (insert === 'bundle') 
                               ? this.makeBundleCode(assets[i]) 
                               : (insert === 'xhr') 
                                 ? this.makeXHRCode() 
                                 : 'console.log("SVG SPRITELY ERROR! NO INSERT OPTION DEFINED");'
-                          }
-                          </script></body>`
+                          }</script></body>`.trim()
                         )
                       )
                     );
@@ -326,7 +323,7 @@ class WebpackSvgSpritely {
             /********************/
             /* XHR / None types */
             /********************/
-            if (['xhr', 'none'].indexOf(insert) !== -1) {
+            if (['xhr'].indexOf(insert) !== -1) {
               assets = this.makeSpriteSheet(assets);
               compilation.updateAsset(
                 name,
