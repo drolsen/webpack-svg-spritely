@@ -2,9 +2,13 @@
   <img src="/assets/logo.png" width="300" />
   <p style="margin-top: 25px;">Plugin that bundles project SVG files into a SVG sprite.</p>
 
-[![Build Status](https://travis-ci.com/drolsen/webpack-svg-spritely.svg?branch=master)](https://travis-ci.com/drolsen/webpack-svg-spritely)
-[![dependencies Status](https://david-dm.org/drolsen/webpack-svg-spritely/status.svg)](https://david-dm.org/drolsen/webpack-svg-spritely)
-[![devDependencies Status](https://david-dm.org/drolsen/webpack-svg-spritely/dev-status.svg)](https://david-dm.org/drolsen/webpack-svg-spritely?type=dev)
+[![Build Status](https://app.travis-ci.com/drolsen/webpack-svg-spritely.svg?branch=master)](https://app.travis-ci.com/drolsen/webpack-svg-spritely)
+[![Minimum node.js version](https://badgen.net/badge/node/%3E=14.17.0/green)](https://npmjs.com/package/webpack-svg-spritely)
+[![downloads](https://img.shields.io/npm/dm/webpack-svg-spritely.svg?style=flat-square)](http://npm-stat.com/charts.html?package=webpack-svg-spritely&from=2022-01-08)
+[![version](https://img.shields.io/npm/v/webpack-svg-spritely.svg?style=flat-square)](http://npm.im/webpack-svg-spritely)
+[![GitLab release](https://badgen.net/github/releases/drolsen/webpack-svg-spritely)](https://github.com/drolsen/webpack-svg-spritely/releases)
+[![MIT License](https://img.shields.io/npm/l/webpack-svg-spritely.svg?style=flat-square)](http://opensource.org/licenses/MIT)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/drolsen/webpack-svg-spritely/graphs/commit-activity)
 </div>
 
 ### How it works
