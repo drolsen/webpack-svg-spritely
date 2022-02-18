@@ -3,13 +3,13 @@ const fs = require('fs');
 const path = require('path');
  
 test('basic', t => {
-  let insert = false;
+  let pass = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/basic/main.js'), 'utf8');
-  if (testData.toString().indexOf('WP_SVG_XHR') !== -1) {
-    insert = true;
+  if (testData.toString().indexOf('Invalid SVG Response') !== -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    pass = true;
   }
 
-  if (insert) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();
@@ -17,10 +17,9 @@ test('basic', t => {
 });
 
 test('manifest', t => {
-  let manifest = false;
-  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/manifest/icon-manifest.json'), 'utf8');  
+  const pass = fs.readFileSync(path.resolve(__dirname, '../dist/manifest/icon-manifest.json'), 'utf8');  
 
-  if (testData) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();
@@ -28,14 +27,14 @@ test('manifest', t => {
 });
 
 test('entry-html', t => {
-  let insert = false;
-  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/entry-html/test.b.html'), 'utf8');
-  
-  if (testData.toString().indexOf('<symbol id="icon-down"') !== -1) {
-    insert = true;
+  let pass = false;
+  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/entry-html/index.b.html'), 'utf8');
+
+  if (testData.toString().indexOf('Invalid SVG Response') !== -1) {
+    pass = true;
   }
 
-  if (insert) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();
@@ -43,14 +42,39 @@ test('entry-html', t => {
 });
 
 test('entry-js', t => {
-  let insert = false;
+  let pass = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/entry-js/testB.js'), 'utf8');
   
-  if (testData.toString().indexOf('WP_SVG_XHR') !== -1) {
-    insert = true;
+  if (testData.toString().indexOf('Invalid SVG Response') !== -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    pass = true;
   }
 
-  if (insert) {
+  if (pass) {
+    t.pass();
+  } else {
+    t.fail();
+  }
+});
+
+test('entry-multi-js', t => {
+  let passes = true;
+  const testDataA = fs.readFileSync(path.resolve(__dirname, '../dist/entry-js-multi/testA.js'), 'utf8');
+  const testDataB = fs.readFileSync(path.resolve(__dirname, '../dist/entry-js-multi/testB.js'), 'utf8');
+  const testDataC = fs.readFileSync(path.resolve(__dirname, '../dist/entry-js-multi/index.b.html'), 'utf8');
+  
+  if (testDataA.toString().indexOf('Invalid SVG Response') === -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    passes = false;
+  }
+
+  if (testDataB.toString().indexOf('Invalid SVG Response') === -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    passes = false;
+  }
+
+  if (testDataB.toString().indexOf('Invalid SVG Response') === -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    passes = false;
+  }   
+
+  if (passes) {
     t.pass();
   } else {
     t.fail();
@@ -58,14 +82,32 @@ test('entry-js', t => {
 });
 
 test('filename', t => {
-  let insert = false;
+  let pass = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/filename/testA.js'), 'utf8');
   
   if (testData.toString().indexOf('custom-') !== -1) {
-    insert = true;
+    pass = true;
   }
 
-  if (insert) {
+  if (pass) {
+    t.pass();
+  } else {
+    t.fail();
+  }
+});
+
+test('filter', t => {
+  let pass = false;
+  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/filtering/images/iconset.svg'), 'utf8');
+  
+  if (
+    testData.toString().indexOf('icon-left') === -1
+    && testData.toString().indexOf('icon-right') === -1
+  ) {
+    pass = true;
+  }
+
+  if (pass) {
     t.pass();
   } else {
     t.fail();
@@ -73,29 +115,14 @@ test('filename', t => {
 });
 
 test('insert-bundle', t => {
-  let insert = false;
+  let pass = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/insert-bundle/testA.js'), 'utf8');
   
   if (testData.toString().indexOf('WP_SVG_DIV') !== -1) {
-    insert = true;
+    pass = true;
   }
 
-  if (insert) {
-    t.pass();
-  } else {
-    t.fail();
-  }
-});
-
-test('insert-document', t => {
-  let insert = false;
-  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/insert-document/index.a.html'), 'utf8');
-  
-  if (testData.toString().indexOf('<symbol') !== -1) {
-    insert = true;
-  }
-
-  if (insert) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();
@@ -103,15 +130,14 @@ test('insert-document', t => {
 });
 
 test('insert-none', t => {
-  let insert = true;
+  let pass = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/insert-none/testA.js'), 'utf8');
   
-  if (testData.toString().indexOf('WP_SVG_DIV') === -1
-    && testData.toString().indexOf('WP_SVG_XHR') === -1) {
-    insert = false;
+  if (testData.toString().indexOf('Invalid SVG Response') === -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    pass = true;
   }
 
-  if (!insert) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();
@@ -119,14 +145,14 @@ test('insert-none', t => {
 });
 
 test('insert-xhr', t => {
-  let insert = false;
+  let pass = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/insert-xhr/testA.js'), 'utf8');
   
-  if (testData.toString().indexOf('WP_SVG_XHR') !== -1) {
-    insert = true;
+  if (testData.toString().indexOf('Invalid SVG Response') !== -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    pass = true;
   }
 
-  if (insert) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();
@@ -134,30 +160,46 @@ test('insert-xhr', t => {
 });
 
 
-test('minification', t => {
-  let insert = false;
-  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/minification/testA.js'), 'utf8');
+test('location-bodyStart', t => {
+  let pass = false;
+  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/location-body-start/testA.js'), 'utf8');
   
-  if (testData.toString().indexOf('iconset-') !== -1) {
-    insert = true;
+  if (testData.toString().indexOf('document.body.insertBefore') !== -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    pass = true;
   }
 
-  if (insert) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();
   }
 });
+
+test('location-bodyEnd', t => {
+  let pass = false;
+  const testData = fs.readFileSync(path.resolve(__dirname, '../dist/location-body-end/testA.js'), 'utf8');
+  
+  if (testData.toString().indexOf('document.body.append') !== -1) { // "Invalid SVG Response" can be found in minified/un-minfied source
+    pass = true;
+  }
+
+  if (pass) {
+    t.pass();
+  } else {
+    t.fail();
+  }
+});
+
 
 test('path', t => {
-  let insert = false;
+  let pass = false;
   const testData = fs.readFileSync(path.resolve(__dirname, '../dist/path/testA.js'), 'utf8');
-  
-  if (testData.toString().indexOf('/~/custom/path/to/svg/') !== -1) {
-    insert = true;
+
+  if (testData.toString().indexOf('/~/custom/path/to/svg') !== -1) {
+    pass = true;
   }
 
-  if (insert) {
+  if (pass) {
     t.pass();
   } else {
     t.fail();

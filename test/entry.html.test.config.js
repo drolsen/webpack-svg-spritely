@@ -1,5 +1,5 @@
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
 const WebpackSVGSpritely = require('../index.js');
 const path = require('path');
 
@@ -34,14 +34,18 @@ const config = {
 module.exports = (env, argv) => {
   config.plugins = [
     new CleanWebpackPlugin(),
-    new CopyWebpackPlugin([
-      { from: 'test/test.a.html' },
-      { from: 'test/test.b.html' }
-    ]),
+    new HtmlWebPackPlugin({
+      'template': './test/test.a.html',
+      'filename': './index.a.html',
+    }),    
+    new HtmlWebPackPlugin({
+      'template': './test/test.b.html',
+      'filename': './index.b.html',
+    }),     
     new WebpackSVGSpritely({
       output: '/images',
-      insert: 'document',
-      entry: 'test.b.html'
+      insert: 'xhr',
+      entry: 'index.b.html'
     })
   ];
   return config;

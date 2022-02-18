@@ -3,12 +3,10 @@ const WebpackSVGSpritely = require('../index.js');
 const path = require('path');
 
 const config = {
-  entry: {
-    testA: path.resolve(__dirname, 'test.a.js')
-  },
+  entry: path.resolve(__dirname, 'test.a.js'),
   output: {
-    path: path.resolve(__dirname, '../dist/minification'), 
-    filename: '../minification/[name].js'
+    path: path.resolve(__dirname, '../dist/filtering'), 
+    filename: '../filtering/[name].js'
   },
   module: {
     rules: [{
@@ -18,11 +16,14 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../minification/images/'
+            'outputPath': '../filtering/images/'
           }
         }
       ]
     }]
+  },
+  optimization: {
+    minimize: false
   } 
 };
 
@@ -31,7 +32,8 @@ module.exports = (env, argv) => {
     new CleanWebpackPlugin(),
     new WebpackSVGSpritely({
       output: '/images',
-      insert: 'xhr'
+      filename: 'iconset',
+      filter: ['left', 'right']
     })
   ];
   return config;
