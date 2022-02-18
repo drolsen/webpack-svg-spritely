@@ -9,8 +9,8 @@ const config = {
     testB: path.resolve(__dirname, 'test.b.js')
   },
   output: {
-    path: path.resolve(__dirname, '../dist/entry-js'), 
-    filename: '../entry-js/[name].js'
+    path: path.resolve(__dirname, '../dist/entry-js-multi'), 
+    filename: '../entry-js-multi/[name].js'
   },
   module: {
     rules: [{
@@ -20,7 +20,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../entry-js/images/'
+            'outputPath': '../entry-js-multi/images/'
           }
         }
       ]
@@ -45,7 +45,7 @@ module.exports = (env, argv) => {
     new WebpackSVGSpritely({
       output: '/images',
       insert: 'xhr', // is default
-      entry: 'testB'
+      entry: ['testB', 'test.a.js', 'index.b.html']
     })
   ];
   return config;

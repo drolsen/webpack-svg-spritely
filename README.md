@@ -58,10 +58,13 @@ Option | Types | Description | Default
 --- | --- | --- | ---
 `output` | String | Location of where sprite file gets written to disk. | Relative to Webpack build's output.
 `filename` | String | Name of the sprite file that gets written to disk. | iconset-[hash].svg
+`filter` | String Array | Name of the SVG files you wish to exclude from sprite(s). | no filtering
 `prefix` | String | Prefix used in the sprite file symbol's name | `icon-`
-`insert` | String | Defines how/if sprite symbols get inserted into DOM (xhr, html, bundle, none). | xhr method
+`insert` | String | Defines HOW svg sprite symbols get inserted into DOM (xhr, bundle, none). | xhr method
+`location` | String | Defines WHERE SVG sprite symbols DOM will be injected. | bodyStart
 `url` | String | Overloads the `insert.xhr` option's request URL. | Relative to root of server.
-`entry` | String | Allows you to define what entry file or html document to insert code into. | First entry or all documents
+`entry` | String Array | Allows you to define what entry file(s) or html document(s) to insert sprite or XHR JS into. | All webpack entry files
+`combine` | Boolean | Combines all SVG files into single sprite across multiple Webpack entry files. | false
 `manifest` | String or Object | Allows you to define path and filename to a generated a JSON manifest file of found symbols.
 
 ## options.output
@@ -74,15 +77,26 @@ new WebpackSVGSpritely({
 })
 ```
 
-## optins.filename
+## options.filename
 This option allows you to specify a custom name for the sprite file.
 You can use a `[hash]` flag to combine a MD5 cache pop hash to filenames.
 
-Please note: if you using a [hash] flag within `filename` you are subjected to unique hash numbers per build. Consider removing `[hash]` flag, if you have logic beyond this plugin that needs a consistent sprite filename when written to disk.
+**Note:** if you using a [hash] flag within `filename` you are subjected to unique hash numbers per build. Consider removing `[hash]` flag, if you have logic beyond this plugin that needs a consistent sprite filename when written to disk.
 
 ```js
 new WebpackSVGSpritely({
   filename: 'custom-svg-sprite-[hash].svg'
+})
+```
+
+## options.filter
+This option allows you to specify an array of SVG filenames you wish to exclude from generated sprite sheets.
+
+**Note:** There is no RegEx or wildcard abilities here and must be an exact 1:1 of the SVG filename you wish to explicitly exclude. However the inclusion or exclusion of SVG file extension is optional to help curve any miss configurations.
+
+```js
+new WebpackSVGSpritely({
+  filter: ['bob.svg', 'ross.svg', 'paintings']
 })
 ```
 
@@ -112,7 +126,7 @@ The insert option allows you to define how sprite symbols gets inserted into the
 
 ```js
 new WebpackSVGSpritely({
-  insert: 'xhr | bundle | document | none'
+  insert: 'xhr | bundle | none'
 })
 ```
 
@@ -122,14 +136,25 @@ XHR code snip get inserted into your build's entry file(s). The XHR option will 
 ### bundle
 If you wish to not write sprite to disk / XHR option, you can bundle sprite symbols directly into your build's entry file(s) instead. This can increase your bundled size pretty quickly, but does ensure svg sprite works offline.
 
-### document
-If you have HTML assets in your build's ouput, you can insert the sprite symbols into these HTML document(s). This bypasses any need for you to insert code into any entry, and the needed for a sprite file to be written to disk.
-
-Because this option reaches into the build's HTML asset output, it works with both [HTMLWebpackPlugin](https://www.npmjs.com/package/html-webpack-plugin) and [CopyWebpackPlugin](https://www.npmjs.com/package/copy-webpack-plugin) configuration.
-
 ### none
 When working with larger backend systems (Java or .Net) that inserts sprite symbols into documents, use the none option.
 This will still write a sprite file to disk for backend, but bypass any code from being inserted into client side documents.
+
+## options.location
+The location options lets you define where in the DOM sprite svg source will live.
+
+```js
+new WebpackSVGSpritely({
+  location: 'bodyStart | bodyEnd'
+})
+```
+
+### bodyStart
+This option will insert the sprite sheet DOM into the start of the document body using insertBefore method.
+
+### bodyEnd
+This option will insert the sprite sheet DOM into the end of the document body using append method. No guarantee it will be the last child in head.
+
 
 ## options.url
 If you choose to set the `insert.xhr` option, the default request location for sprite file will be `output location + filename`. If you wish to overload this default file endpoint you can do so with this option.
@@ -141,9 +166,9 @@ new WebpackSVGSpritely({
 ```
 
 ## options.entry
-If you would like to specify a specific file to insert code into (when using multiple entry files or html document), this `entry` option will allow you to do just that. By default, without specifying an entry file, code can be inserted into first found entry or all html documents.
+If you would like to specify a specific file to insert code into (when using multiple entry files or html documents), this `entry` option will allow you to do just that. By default, without specifying an entry file, code can be inserted into all webpack configured entry files.
 
-If you use the `insert.xhr` or `insert.bundle`, this option pertains to entry files:
+If you referencing a by imported file name or by shorthand name:
 ```js
 module.exports = {
   "entry": {
@@ -155,14 +180,32 @@ module.exports = {
   },
   "plugins": [
     new WebpackSVGSpritely({
-      insert: 'xhr or bundle',
-      entry: 'testB'
+      insert: 'xhr|bundle',
+      entry: ['testB']
     })
   ]
 };
 ```
 
-If using `insert.document` instead, this option pertains to html documents. 
+```js
+module.exports = {
+  "entry": {
+    testA: 'test.a.js',
+    testB: 'test.b.js'
+  },
+  output: {
+    filename: '../dist/basic/[name].js'
+  },
+  "plugins": [
+    new WebpackSVGSpritely({
+      insert: 'xhr|bundle',
+      entry: ['test.b.js']
+    })
+  ]
+};
+```
+
+If using html entry instead: 
 ```js
 module.exports = {
   "entry": {
@@ -179,12 +222,40 @@ module.exports = {
       'filename': './documents/[name].html',
     }),
     new WebpackSVGSpritely({
-      insert: 'document',
-      entry: 'index.html'
+      insert: 'xhr|bundle',
+      entry: ['index.html']
     })
   ]
 };
 ```
+
+## options.combine
+When using multiple entry files for a Webpack configuration: 
+```js
+entry: {
+  testA: 'test.a.half.js',
+  testB: 'test.b.half.js'
+}
+```
+
+Webpack SVG Spritely will (by default) create unique sprite sheets per configured entry files. Each sprite sheet containting only it's corresponding entry file's SVG files.
+
+However, if you would like to consolidate all svg files from multiple entry files in a single sprite sheet setting the combine option to `true` will do just that: 
+
+```js
+new WebpackSVGSpritely({
+  combine: true
+})
+```
+
+**Note:** Because of the way HTML documents are brought into Webpack builds by means of HTMLWebpackPlugin:
+```js
+new HtmlWebPackPlugin({
+  'template': './some.html',
+  'filename': './index.html',
+}),
+```
+There is zero association to these configured HTML documents, and one or another entry file. Therefor, if you have configured Webpack SVG Spritely to use `insert: 'document'` this combine option will have no effect, and your HTML document(s) will contain assets from all configured entry files.
 
 ## options.manifest
 This option allows you to set both the path and filename of a JSON manifest file. 
@@ -262,14 +333,5 @@ These are here to help you better understand the expectations of each option we 
 Simply run `npm run test` or `yarn test` from the root of the plugin to run all tests. Running a test will produce a `/dist/[test]` directories. With each test, be sure to review the bottom of the bundled.js file(s), and the sprite file to understanding changes taking place from test to test.
 
 If you would like to change a test, update the root package.json file's `test` script to use any of the `/test/*.test.config.js` files.
-
-- `basic.test.config.js` = Should produce a out of the box sprite file and inject XHR code into bundled entry file.
-- `entry.test.config.js` = Should produce a out of the box sprite file and inject XHR code into specified entry file.
-- `filename.test.config.js` = Should produce a sprite file with custom name and use MD5 cache popping [hash] flag.
-- `path.test.config.js` = Should set custom XHR endpoint path within the injected XHR code.
-- `inject.nothing.test.config.js` = Should inject nothing into entry file, but write sprite file to disk still.
-- `inject.xhr.test.config.js` = Should inject XHR code into entry file and write sprite to disk.
-- `inject.sprite.test.config.js` = Should inject sprite code instead of XHR code into entry file and write sprite to disk.
-- `minified.test.config.js` = Should produce a out of the box sprite file and inject XHR code into minified bundled entry file.
 
 `test.a.js` and `test.b.js` files are our test supporting entry files, not test configurations. Both these files are requiring our test svg files which is a requirement of Webpack SVG Spritely.

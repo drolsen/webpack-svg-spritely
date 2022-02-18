@@ -8,7 +8,7 @@
     "webpack svg sprite",
     "webpack svg sprite plugin"
   ],
-  "version": "1.4.6",
+  "version": "2.2.0",
   "description": "Plugin that bundles project SVG files into a SVG sprite",
   "repository": "drolsen/webpack-svg-spritely",
   "bugs": {
@@ -17,30 +17,35 @@
   "author": "Devin R. Olsen <devin@devinrolsen.com> (http://devinrolsen.com)",
   "license": "MIT",
   "scripts": {
-    "test": "npm run basic-test && npm run manifest-test && npm run entry-js-test && npm run entry-html-test && npm run filename-test && npm run path-test && npm run insert-document-test && npm run insert-xhr-test && npm run insert-bundle-test && npm run insert-nothing-test && npm run minification-test && npm run ava-test",
+    "test": "npm run basic-test && npm run manifest-test && npm run entry-js-test && npm run entry-js-multi-test && npm run entry-html-test && npm run filename-test && npm run filter-test && npm run path-test && npm run insert-xhr-test && npm run location-body-start-test && npm run location-body-end-test && npm run insert-bundle-test && npm run insert-nothing-test && npm run combine-test && npm run ava-test",
     "basic-test": "webpack --config ./test/basic.test.config.js --mode production",
+    "combine-test": "webpack --config ./test/combine.test.config.js --mode production",
     "manifest-test": "webpack --config ./test/manifest.test.config.js --mode production",
-    "entry-js-test": "webpack --config ./test/entry.js.test.config.js --mode production",
-    "entry-html-test": "webpack --config ./test/entry.html.test.config.js --mode production",
     "filename-test": "webpack --config ./test/filename.test.config.js --mode production",
-    "insert-document-test": "webpack --config ./test/insert.document.test.config.js --mode production",
+    "filter-test": "webpack --config ./test/filter.test.config.js --mode production",
+    "path-test": "webpack --config ./test/path.test.config.js --mode production",
+    "entry-test": "npm run entry-js-test && npm run entry-js-multi-test && npm run entry-html-test && npm run ava-test",
+    "entry-js-test": "webpack --config ./test/entry.js.test.config.js --mode production",
+    "entry-js-multi-test": "webpack --config ./test/entry.js.multi.test.config.js --mode production",
+    "entry-html-test": "webpack --config ./test/entry.html.test.config.js --mode production",
+    "insert-test": "npm run insert-nothing-test && npm run insert-bundle-test && npm run insert-xhr-test && npm run ava-test",
     "insert-nothing-test": "webpack --config ./test/insert.nothing.test.config.js --mode production",
     "insert-bundle-test": "webpack --config ./test/insert.bundle.test.config.js --mode production",
     "insert-xhr-test": "webpack --config ./test/insert.xhr.test.config.js --mode production",
-    "minification-test": "webpack --config ./test/minified.test.config.js --mode production",
-    "path-test": "webpack --config ./test/path.test.config.js --mode production",
+    "location-test": "npm run location-body-start-test && npm run location-body-end-test && npm run ava-test",
+    "location-body-start-test": "webpack --config ./test/location.body.start.test.config.js --mode production",
+    "location-body-end-test": "webpack --config ./test/location.body.end.test.config.js --mode production",
     "ava-test": "ava ./test/ava.test.js"
   },
   "engines": {
-    "node": ">=10.15.1"
+    "node": ">=14.17.0"
   },
   "devDependencies": {
-    "ava": "^2.3.0",
-    "clean-webpack-plugin": "^3.0.0",
-    "copy-webpack-plugin": "^5.0.4",
-    "file-loader": "^4.2.0",
-    "html-webpack-plugin": "^3.2.0",
-    "webpack": "^4.39.2",
-    "webpack-cli": "^3.3.7"
+    "ava": "^3.15.0",
+    "clean-webpack-plugin": "^4.0.0",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "5.5.0",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1"
   }
 }

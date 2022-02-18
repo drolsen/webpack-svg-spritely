@@ -9,8 +9,8 @@ const config = {
     testB: path.resolve(__dirname, 'test.b.js')
   },
   output: {
-    path: path.resolve(__dirname, '../dist/entry-js'), 
-    filename: '../entry-js/[name].js'
+    path: path.resolve(__dirname, '../dist/location-body-end'), 
+    filename: '../location-body-end/[name].js'
   },
   module: {
     rules: [{
@@ -20,7 +20,7 @@ const config = {
           'loader': 'file-loader', // (see: https://www.npmjs.com/package/file-loader)
           'options': {
             'name': '[name].[ext]',
-            'outputPath': '../entry-js/images/'
+            'outputPath': '../location-body-end/images/'
           }
         }
       ]
@@ -37,15 +37,15 @@ module.exports = (env, argv) => {
     new HtmlWebPackPlugin({
       'template': './test/test.a.html',
       'filename': './index.a.html',
-    }),    
+    }),
     new HtmlWebPackPlugin({
       'template': './test/test.b.html',
       'filename': './index.b.html',
-    }), 
+    }),    
     new WebpackSVGSpritely({
+      location: 'bodyEnd',
       output: '/images',
-      insert: 'xhr', // is default
-      entry: 'testB'
+      insert: 'xhr'
     })
   ];
   return config;
