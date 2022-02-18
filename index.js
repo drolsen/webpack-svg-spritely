@@ -17,7 +17,7 @@ const makeSymbols = (symbols) => cleanTemplateLiteral(`
     xmlns="http://www.w3.org/2000/svg"
     style="position:absolute; width: 0; height: 0"
   >
-    ${symbols.filter((n) => n).filter((item, index) => data.indexOf(item) === index).join('')}
+    ${symbols.filter((n) => n).filter((item, index) => symbols.indexOf(item) === index).join('')}
   </svg>
 `);
 
@@ -103,7 +103,7 @@ const generateManifest = (options, data, compiler) => {
   /* Step three, we have a simple configuration so we will write */
   fs.writeFile(
     outputPath,
-    JSON.stringify(data.filter((n) => n).filter((item, index) => symbols.indexOf(item) === index)),
+    JSON.stringify(data.filter((n) => n).filter((item, index) => data.indexOf(item) === index)),
     (err) => {
       if(err) {
         console.log(err);
