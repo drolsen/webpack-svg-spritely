@@ -220,7 +220,10 @@ class WebpackSvgSpritely {
 
             asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
             asset.entry = filename;
-            process.spritely.manifest.push({name, source});
+
+            if (!process.spritely.manifest.some((n) => n.name === name)) {
+              process.spritely.manifest.push({name, source});
+            }
 
             return asset;
           }
