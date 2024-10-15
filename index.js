@@ -47,7 +47,7 @@ const generateManifest = (options, data, compiler) => {
   /* Step three, we have a simple configuration so we will write */
   fs.writeFile(
     outputPath,
-    JSON.stringify(data.filter((n) => n)),
+    JSON.stringify(data.filter((n) => n).filter((item, index) => data.indexOf(item) === index)),
     (err) => console.log(err)
   );
 }
@@ -120,7 +120,7 @@ class WebpackSvgSpritely {
         xmlns="http://www.w3.org/2000/svg"
         style="position:absolute; width: 0; height: 0"
       >
-        ${symbols.join('')}
+        ${symbols.filter((n) => n).filter((item, index) => symbols.indexOf(item) === index).join('')}
       </svg>
     `)
   };
