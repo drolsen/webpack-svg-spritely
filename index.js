@@ -47,7 +47,7 @@ const generateManifest = (options, data, compiler) => {
   /* Step three, we have a simple configuration so we will write */
   fs.writeFile(
     outputPath,
-    JSON.stringify(data.filter((n) => n).filter((item, index) => data.indexOf(item) === index)),
+    JSON.stringify(data.filter((n) => n)),
     (err) => console.log(err)
   );
 }
@@ -120,7 +120,7 @@ class WebpackSvgSpritely {
         xmlns="http://www.w3.org/2000/svg"
         style="position:absolute; width: 0; height: 0"
       >
-        ${symbols.filter((n) => n).filter((item, index) => symbols.indexOf(item) === index).join('')}
+        ${symbols.join('')}
       </svg>
     `)
   };
@@ -208,30 +208,42 @@ class WebpackSvgSpritely {
 
   apply(compiler) {
     compiler.hooks.thisCompilation.tap({ name: 'WebpackSvgSpritely' }, (compilation) => {
-
       /* Gather SVG Symbols & Optional Manifest Data */
       compilation.hooks.chunkAsset.tap('WebpackSvgSpritely', (chunk, filename) => {
-        const assets = [...chunk.auxiliaryFiles];
-        process.spritely.symbols = Object.keys(assets).map((i) => {
-          if (assets[i].indexOf('.svg') !== -1) {
-            const asset = compilation.getAsset(assets[i]);
+        const assets = compilation.getAssets();
+        const entryFiles = Array.from(compilation.entrypoints.keys());
+
+        Object.keys(assets).map((i) => {
+          if (assets[i].name.indexOf('.svg') !== -1) {
+            const asset = compilation.getAsset(assets[i].name);
             const source = asset.source.source().toString('utf8');
             const { name } = asset;
 
             asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
-            asset.entry = filename;
+            asset.entry = entryFiles.find((entryFile) => chunk.name === entryFile || filename.includes(entryFile));
 
-            if (!process.spritely.manifest.some((n) => n.name === name)) {
-              process.spritely.manifest.push({name, source});
+            process.spritely.manifest.push({name, source});
+
+            let hasNoDuplicate = true;
+            Object.keys(process.spritely.symbols).map((j) => {
+              if (process.spritely.symbols[j].name === name) {
+                hasNoDuplicate = false;
+              }
+            });
+
+            if (hasNoDuplicate) {
+              process.spritely.symbols.push(asset);
             }
-
-            return asset;
           }
 
           return false;
-        }).filter(
+        });
+
+        process.spritely.symbols = process.spritely.symbols.filter(
           // Filters out options.filter and ensures no NULL records
-          (svg) => svg && !this.options.filter.some((filter) => svg.name.indexOf(filter) !== -1)
+          (svg) => {
+            return svg && !this.options.filter.some((filter) => svg.name.indexOf(filter) !== -1);
+          }
         );
 
         this.hash = this.makeHash(process.spritely.symbols);
