@@ -219,10 +219,6 @@ class WebpackSvgSpritely {
             const source = asset.source.source().toString('utf8');
             const { name } = asset;
 
-            asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
-            asset.entry = entryFiles.find((entryFile) => chunk.name === entryFile || filename.includes(entryFile));
-
-            process.spritely.manifest.push({name, source});
 
             let hasNoDuplicate = true;
             Object.keys(process.spritely.symbols).map((j) => {
@@ -232,6 +228,9 @@ class WebpackSvgSpritely {
             });
 
             if (hasNoDuplicate) {
+              asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
+              asset.entry = entryFiles.find((entryFile) => chunk.name === entryFile || filename.includes(entryFile));
+              process.spritely.manifest.push({name, source});
               process.spritely.symbols.push(asset);
             }
           }
