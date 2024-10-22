@@ -208,6 +208,10 @@ class WebpackSvgSpritely {
 
   apply(compiler) {
     compiler.hooks.thisCompilation.tap({ name: 'WebpackSvgSpritely' }, (compilation) => {
+      /* Ensures no memory leaks */
+      process.spritely.symbols = [];
+      process.spritely.manifest = [];
+
       /* Gather SVG Symbols & Optional Manifest Data */
       compilation.hooks.chunkAsset.tap('WebpackSvgSpritely', (chunk, filename) => {
         const assets = compilation.getAssets();
@@ -219,10 +223,6 @@ class WebpackSvgSpritely {
             const source = asset.source.source().toString('utf8');
             const { name } = asset;
 
-            asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
-            asset.entry = entryFiles.find((entryFile) => chunk.name === entryFile || filename.includes(entryFile));
-
-            process.spritely.manifest.push({name, source});
 
             let hasNoDuplicate = true;
             Object.keys(process.spritely.symbols).map((j) => {
@@ -232,6 +232,9 @@ class WebpackSvgSpritely {
             });
 
             if (hasNoDuplicate) {
+              asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
+              asset.entry = entryFiles.find((entryFile) => chunk.name === entryFile || filename.includes(entryFile));
+              process.spritely.manifest.push({name, source});
               process.spritely.symbols.push(asset);
             }
           }
