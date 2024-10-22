@@ -208,6 +208,10 @@ class WebpackSvgSpritely {
 
   apply(compiler) {
     compiler.hooks.thisCompilation.tap({ name: 'WebpackSvgSpritely' }, (compilation) => {
+      /* Ensures no memory leaks */
+      process.spritely.symbols = [];
+      process.spritely.manifest = [];
+
       /* Gather SVG Symbols & Optional Manifest Data */
       compilation.hooks.chunkAsset.tap('WebpackSvgSpritely', (chunk, filename) => {
         const assets = compilation.getAssets();
