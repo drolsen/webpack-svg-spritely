@@ -184,10 +184,12 @@ class WebpackSvgSpritely {
       if (symbols) {
         url = url.replace(/\[hash\]/g, this.hash);
         if (url.indexOf('.svg') === -1) { url = `${url}.svg`; }
-        assets[`.${url}`] = {
-          source: () => symbols,
-          size: () => symbols.length
-        };
+        if (!assets[`.${url}`]) {
+          assets[`.${url}`] = {
+            source: () => symbols,
+            size: () => symbols.length
+          };
+        }
       }
     } else {
       let uniqueUrl = `.${output}/${path.basename(url.replace(/\[hash\]/g, this.hash))}`;
@@ -196,10 +198,12 @@ class WebpackSvgSpritely {
       Object.keys(this.entries).map((i) => {
         const symbols = this.getSymbols(i);
         if (symbols) {
-          assets[uniqueUrl] = {
-            source: () => symbols,
-            size: () => symbols.length
-          };
+          if (!assets[uniqueUrl]) {
+            assets[uniqueUrl] = {
+              source: () => symbols,
+              size: () => symbols.length
+            };
+          }
         }
       });
     }
