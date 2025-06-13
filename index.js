@@ -238,7 +238,11 @@ class WebpackSvgSpritely {
             if (hasNoDuplicate) {
               asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
               asset.entry = entryFiles.find((entryFile) => chunk.name === entryFile || filename.includes(entryFile));
-              process.spritely.manifest.push({name, source});
+
+              process.spritely.manifest.push({
+                name: path.basename(name, path.extname(name)), 
+                source
+              });
               process.spritely.symbols.push(asset);
             }
           }
