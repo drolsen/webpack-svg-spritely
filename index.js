@@ -225,7 +225,7 @@ class WebpackSvgSpritely {
           if (assets[i].name.indexOf('.svg') !== -1) {
             const asset = compilation.getAsset(assets[i].name);
             const source = asset.source.source().toString('utf8');
-            let { name } = asset;
+            const { name } = asset;
 
 
             let hasNoDuplicate = true;
