@@ -225,7 +225,7 @@ class WebpackSvgSpritely {
           if (assets[i].name.indexOf('.svg') !== -1) {
             const asset = compilation.getAsset(assets[i].name);
             const source = asset.source.source().toString('utf8');
-            const { name } = asset;
+            let { name } = asset;
 
 
             let hasNoDuplicate = true;
@@ -238,7 +238,11 @@ class WebpackSvgSpritely {
             if (hasNoDuplicate) {
               asset.symbol = cleanSymbolContents(name, this.options.prefix, source);
               asset.entry = entryFiles.find((entryFile) => chunk.name === entryFile || filename.includes(entryFile));
-              process.spritely.manifest.push({name, source});
+
+              process.spritely.manifest.push({
+                name: path.basename(name, path.extname(name)), 
+                source
+              });
               process.spritely.symbols.push(asset);
             }
           }
