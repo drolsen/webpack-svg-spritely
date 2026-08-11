@@ -8,6 +8,7 @@ const cleanTemplateLiteral = (literal) => literal.replace(/(\r\n|\n|\r)/gm , ' '
 
 // Source symbol cleaning helper
 const cleanSymbolContents = (name, prefix, contents) => contents
+  .replace(/ id="[^"]*"/g, '')
   .replace(/<svg/g, `<symbol id="${prefix}-${path.basename(name, '.svg')}"`)
   .replace(/<\/svg>/g, '</symbol>')
   .replace('xmlns="http://www.w3.org/2000/svg"', '')
